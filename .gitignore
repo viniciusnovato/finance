@@ -53,6 +53,8 @@ MANIFEST
 .pub/
 build/
 *.lock
+*.cache.dill.track.dill
+*.cache.dill
 
 # IDE
 .vscode/
