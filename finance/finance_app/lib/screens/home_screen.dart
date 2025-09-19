@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
-import '../widgets/dashboard_card.dart';
 import '../widgets/client_list_widget.dart';
 import '../widgets/contract_list_widget.dart';
 import '../widgets/payment_list_widget.dart';
+import '../widgets/dashboard_card.dart';
+import '../widgets/erp_dashboard_card.dart';
+import '../widgets/erp_layout.dart';
 import '../utils/app_colors.dart';
+import '../services/api_service.dart';
 import '../models/payment.dart';
 import 'clients_screen.dart';
 
@@ -18,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  late Future<Map<String, dynamic>> _dashboardDataFuture;
+  Future<Map<String, dynamic>>? _dashboardDataFuture;
   bool _isInitialized = false;
   
   @override
@@ -37,10 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       print('🏠 [HOME] Iniciando carregamento de dados...');
       
-      // Criar o Future para o dashboard APENAS UMA VEZ
-      _dashboardDataFuture = provider.getDashboardData();
-      
-      print('🏠 [HOME] Dashboard future inicializado');
+      print('🏠 [HOME] Preparando carregamento do dashboard');
       
       // Carregar dados em background sem alterar o estado de loading
       // para evitar rebuild durante build
@@ -83,124 +83,104 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
   
+  Widget _buildFallbackCards(AppProvider appProvider) {
+    return ERPMetricsGrid(
+      cards: [
+        ERPDashboardCard(
+          title: 'Total de Clientes',
+          value: '${appProvider.clients.length}',
+          subtitle: 'Clientes cadastrados',
+          icon: Icons.people_outline,
+          iconColor: AppColors.primary,
+          onTap: () {
+            setState(() {
+              _selectedIndex = 1;
+            });
+          },
+        ),
+        ERPDashboardCard(
+          title: 'Contratos Ativos',
+          value: '${appProvider.contracts.length}',
+          subtitle: 'Contratos em vigência',
+          icon: Icons.description_outlined,
+          iconColor: AppColors.secondary,
+          onTap: () {
+            setState(() {
+              _selectedIndex = 2;
+            });
+          },
+        ),
+        ERPDashboardCard(
+          title: 'Pagamentos Pendentes',
+          value: '${appProvider.payments.where((p) => p.status == PaymentStatus.pending).length}',
+          subtitle: 'Aguardando pagamento',
+          icon: Icons.schedule_outlined,
+          iconColor: AppColors.statusPending,
+          onTap: () {
+            setState(() {
+              _selectedIndex = 3;
+            });
+          },
+        ),
+        ERPDashboardCard(
+          title: 'Pagamentos em Atraso',
+          value: '${appProvider.payments.where((p) => p.status == PaymentStatus.overdue).length}',
+          subtitle: 'Requer atenção',
+          icon: Icons.warning_outlined,
+          iconColor: AppColors.statusOverdue,
+          onTap: () {
+            setState(() {
+              _selectedIndex = 3;
+            });
+          },
+        ),
+      ],
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Instituto Areluna - Gestão Financeira',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        actions: [
-          Consumer<AppProvider>(
-            builder: (context, appProvider, child) {
-              return PopupMenuButton<String>(
-                icon: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  child: Text(
-                    appProvider.currentUser?.email?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                onSelected: (value) async {
-                  if (value == 'logout') {
-                    try {
-                      await appProvider.logout();
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erro ao fazer logout: ${e.toString()}'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem<String>(
-                    enabled: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          appProvider.currentUser?.email ?? 'Usuário',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Logado como administrador',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const Divider(),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text(
-                          'Sair',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.people_outlined),
-            selectedIcon: Icon(Icons.people),
-            label: 'Clientes',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.description_outlined),
-            selectedIcon: Icon(Icons.description),
-            label: 'Contratos',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.payment_outlined),
-            selectedIcon: Icon(Icons.payment),
-            label: 'Pagamentos',
-          ),
-        ],
-      ),
+    return ERPLayout(
+      title: _getPageTitle(),
+      breadcrumbs: _getBreadcrumbs(),
+      selectedIndex: _selectedIndex,
+      onNavigationChanged: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: _buildBody(),
     );
+  }
+  
+  String _getPageTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Dashboard';
+      case 1:
+        return 'Clientes';
+      case 2:
+        return 'Contratos';
+      case 3:
+        return 'Pagamentos';
+      default:
+        return 'Dashboard';
+    }
+  }
+  
+  List<String> _getBreadcrumbs() {
+    switch (_selectedIndex) {
+      case 0:
+        return ['Home', 'Dashboard'];
+      case 1:
+        return ['Home', 'Gestão', 'Clientes'];
+      case 2:
+        return ['Home', 'Gestão', 'Contratos'];
+      case 3:
+        return ['Home', 'Gestão', 'Pagamentos'];
+      default:
+        return ['Home'];
+    }
   }
   
   Widget _buildBody() {
@@ -219,425 +199,280 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Widget _buildDashboard() {
-    return Consumer<AppProvider>(builder: (context, provider, child) {
-      if (provider.isLoading) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-      
-      if (provider.error != null) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red[300],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Erro ao carregar dados',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                provider.error!,
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isInitialized = false;
-                  });
-                  _loadInitialData();
-                },
-                child: const Text('Tentar Novamente'),
-              ),
-            ],
-          ),
-        );
-      }
-      
-      return RefreshIndicator(
-        onRefresh: () async {
-          setState(() {
-            _isInitialized = false;
-          });
-          _loadInitialData();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        if (appProvider.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (appProvider.error != null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppColors.statusOverdue,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Erro ao carregar dados',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  appProvider.error!,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isInitialized = false;
+                    });
+                    _loadInitialData();
+                  },
+                  child: const Text('Tentar Novamente'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Resumo Geral',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+              // Métricas principais com dados da API
+              FutureBuilder<Map<String, dynamic>>(
+                future: appProvider.getDashboardData(),
+                builder: (context, snapshot) {
+                  print('🏠 [DASHBOARD] FutureBuilder state: ${snapshot.connectionState}');
+                  if (snapshot.hasError) {
+                    print('❌ [DASHBOARD] FutureBuilder error: ${snapshot.error}');
+                    // Fallback para dados locais em caso de erro
+                    return _buildFallbackCards(appProvider);
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    print('⏳ [DASHBOARD] FutureBuilder aguardando...');
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(50),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                  
+                  final data = snapshot.data ?? {};
+                  print('📊 [DASHBOARD] Dados recebidos: $data');
+                  print('📊 [DASHBOARD] total_clients: ${data['total_clients']}');
+                  print('📊 [DASHBOARD] active_contracts: ${data['active_contracts']}');
+                  print('📊 [DASHBOARD] overdue_payments: ${data['overdue_payments']}');
+                  
+                  return ERPMetricsGrid(
+                    cards: [
+                      ERPDashboardCard(
+                        title: 'Total de Clientes',
+                        value: '${data['total_clients'] ?? 0}',
+                        subtitle: 'Clientes cadastrados',
+                        icon: Icons.people_outline,
+                        iconColor: AppColors.primary,
+                        trend: '+12%',
+                        isPositiveTrend: true,
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = 1;
+                          });
+                        },
+                      ),
+                      ERPDashboardCard(
+                        title: 'Contratos Ativos',
+                        value: '${data['active_contracts'] ?? 0}',
+                        subtitle: 'Contratos em vigência',
+                        icon: Icons.description_outlined,
+                        iconColor: AppColors.secondary,
+                        trend: '+5%',
+                        isPositiveTrend: true,
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = 2;
+                          });
+                        },
+                      ),
+                      ERPDashboardCard(
+                        title: 'Pagamentos Pendentes',
+                        value: '${(data['payments'] ?? {})['pending'] ?? appProvider.payments.where((p) => p.status == PaymentStatus.pending).length}',
+                        subtitle: 'Aguardando pagamento',
+                        icon: Icons.schedule_outlined,
+                        iconColor: AppColors.statusPending,
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = 3;
+                          });
+                        },
+                      ),
+                      ERPDashboardCard(
+                        title: 'Pagamentos em Atraso',
+                        value: '${data['overdue_payments'] ?? 0}',
+                        subtitle: 'Requer atenção',
+                        icon: Icons.warning_outlined,
+                        iconColor: AppColors.statusOverdue,
+                        trend: '-8%',
+                        isPositiveTrend: false,
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = 3;
+                          });
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Ações Rápidas
+              Card(
+                elevation: 1,
+                color: AppColors.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ações Rápidas',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/client-form');
+                            },
+                            icon: const Icon(Icons.person_add_outlined),
+                            label: const Text('Novo Cliente'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/contract-form');
+                            },
+                            icon: const Icon(Icons.add_circle_outline),
+                            label: const Text('Novo Contrato'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _selectedIndex = 3;
+                              });
+                            },
+                            icon: const Icon(Icons.payment_outlined),
+                            label: const Text('Ver Pagamentos'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              _buildDashboardCards(provider),
+              
               const SizedBox(height: 24),
-              Text(
-                'Ações Rápidas',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+              
+              // Pagamentos em Atraso
+              if (appProvider.payments.where((p) => p.status == PaymentStatus.overdue).isNotEmpty)
+                Card(
+                  elevation: 1,
+                  color: AppColors.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.warning_outlined,
+                              color: AppColors.statusOverdue,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Pagamentos em Atraso',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildOverduePayments(appProvider),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildQuickActions(),
-              const SizedBox(height: 24),
-              Text(
-                'Pagamentos em Atraso',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildOverduePayments(provider),
             ],
           ),
-        ),
-      );
-    });
-  }
-  
-  Widget _buildDashboardCards(AppProvider provider) {
-    print('🏠 [DASHBOARD] Construindo dashboard cards...');
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _dashboardDataFuture,
-      builder: (context, snapshot) {
-        print('🏠 [DASHBOARD] FutureBuilder state: ${snapshot.connectionState}');
-        if (snapshot.hasError) {
-          print('❌ [DASHBOARD] FutureBuilder error: ${snapshot.error}');
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          print('⏳ [DASHBOARD] FutureBuilder aguardando...');
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        final data = snapshot.data ?? {};
-        final totalClients = data['total_clients'] ?? 0;
-        final activeContracts = data['active_contracts'] ?? 0;
-        final overduePayments = data['overdue_payments'] ?? 0;
-        final totalReceivable = (data['total_receivable'] ?? 0.0).toDouble();
-        final paymentSummary = data['payment_summary'] ?? {};
-        final averagePaymentPercentage = (paymentSummary['average_payment_percentage'] ?? 0.0).toDouble();
-        
-        return GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.8,
-          children: [
-            DashboardCard(
-              title: 'Total de Clientes',
-              value: totalClients.toString(),
-              icon: Icons.people,
-              color: AppColors.primary,
-            ),
-            DashboardCard(
-              title: 'Contratos Ativos',
-              value: activeContracts.toString(),
-              icon: Icons.description,
-              color: Colors.green,
-            ),
-            DashboardCard(
-              title: 'Pagamentos em Atraso',
-              value: overduePayments.toString(),
-              icon: Icons.warning,
-              color: Colors.orange,
-            ),
-            DashboardCard(
-              title: 'Total a Receber',
-              value: '€ ${totalReceivable.toStringAsFixed(2)}',
-              icon: Icons.attach_money,
-              color: Colors.blue,
-            ),
-            DashboardCard(
-              title: 'Média de Pagamento',
-              value: '${averagePaymentPercentage.toStringAsFixed(1)}%',
-              icon: Icons.trending_up,
-              color: Colors.purple,
-            ),
-            DashboardCard(
-              title: 'Contratos Quitados',
-              value: (paymentSummary['fully_paid_contracts'] ?? 0).toString(),
-              icon: Icons.check_circle,
-              color: Colors.green[700]!,
-            ),
-          ],
         );
       },
     );
   }
   
-  Widget _buildQuickActions() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implementar navegação para novo cliente
-            },
-            icon: const Icon(Icons.person_add),
-            label: const Text('Novo Cliente'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implementar navegação para novo contrato
-            },
-            icon: const Icon(Icons.add_box),
-            label: const Text('Novo Contrato'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-  
   Widget _buildOverduePayments(AppProvider provider) {
     final overduePayments = provider.getOverduePaymentsLocal();
-    final pendingNotOverduePayments = provider.payments
-        .where((payment) => 
-            payment.status == PaymentStatus.pending && 
-            !payment.isOverdue)
-        .toList();
+    
+    if (overduePayments.isEmpty) {
+      return const Text('Nenhum pagamento em atraso.');
+    }
     
     return Column(
-      children: [
-        // Pagamentos em atraso
-        if (overduePayments.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.green[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green[200]!),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  color: Colors.green[600],
-                  size: 32,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Parabéns! Não há pagamentos em atraso.',
-                    style: TextStyle(
-                      color: Colors.green[800],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange[200]!),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[100],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.warning,
-                        color: Colors.orange[800],
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Pagamentos em Atraso (${overduePayments.length})',
-                          style: TextStyle(
-                            color: Colors.orange[800],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: overduePayments.take(5).length,
-                  itemBuilder: (context, index) {
-                    final payment = overduePayments[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.red[100],
-                        child: Icon(
-                          Icons.schedule,
-                          color: Colors.red[800],
-                          size: 20,
-                        ),
-                      ),
-                      title: Text(
-                        'Parcela ${payment.installmentNumber}',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Text(
-                        'Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}\n'
-                        '${payment.daysOverdue} dias em atraso',
-                      ),
-                      trailing: Text(
-                        '€ ${payment.amount.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                      isThreeLine: true,
-                    );
-                  },
-                ),
-                if (overduePayments.length > 5)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedIndex = 3; // Navegar para aba de pagamentos
-                        });
-                      },
-                      child: const Text('Ver todos os pagamentos em atraso'),
-                    ),
-                  ),
-              ],
+      children: overduePayments.take(5).map((payment) {
+        return ListTile(
+          leading: Icon(
+            Icons.warning,
+            color: AppColors.statusOverdue,
+          ),
+          title: Text('Pagamento #${payment.id}'),
+          subtitle: Text('Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}'),
+          trailing: Text(
+            'R\$ ${payment.amount.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: AppColors.statusOverdue,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        
-        // Espaçamento entre widgets
-        if (pendingNotOverduePayments.isNotEmpty) const SizedBox(height: 16),
-        
-        // Pagamentos pendentes não vencidos
-        if (pendingNotOverduePayments.isNotEmpty)
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue[200]!),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[100],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.schedule_outlined,
-                        color: Colors.blue[800],
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Próximos Vencimentos (${pendingNotOverduePayments.length})',
-                          style: TextStyle(
-                            color: Colors.blue[800],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: pendingNotOverduePayments.take(5).length,
-                  itemBuilder: (context, index) {
-                    final payment = pendingNotOverduePayments[index];
-                    final daysUntilDue = payment.daysUntilDue;
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue[100],
-                        child: Icon(
-                          Icons.access_time,
-                          color: Colors.blue[800],
-                          size: 20,
-                        ),
-                      ),
-                      title: Text(
-                        'Parcela ${payment.installmentNumber}',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Text(
-                        'Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}\n'
-                        '${daysUntilDue > 0 ? "Vence em $daysUntilDue dias" : "Vence hoje"}',
-                      ),
-                      trailing: Text(
-                        '€ ${payment.amount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
-                        ),
-                      ),
-                      isThreeLine: true,
-                    );
-                  },
-                ),
-                if (pendingNotOverduePayments.length > 5)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedIndex = 3; // Navegar para aba de pagamentos
-                        });
-                      },
-                      child: const Text('Ver todos os próximos vencimentos'),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-      ],
+        );
+      }).toList(),
     );
   }
 }

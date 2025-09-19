@@ -382,40 +382,20 @@ class AppProvider with ChangeNotifier {
   
   // Métodos de relatório
   Future<Map<String, dynamic>> getDashboardData() async {
+    print('📊 [DASHBOARD] === MÉTODO getDashboardData CHAMADO ===');
     print('📊 [DASHBOARD] Iniciando carregamento de dados do dashboard...');
     
-    // Se já existe uma requisição em andamento, retorna ela
-    if (_dashboardFuture != null) {
-      print('📊 [DASHBOARD] Retornando requisição em andamento...');
-      return _dashboardFuture!;
-    }
-    
-    // Verificar cache (válido por 30 segundos)
-    if (_dashboardCache != null && _dashboardCacheTime != null) {
-      final cacheAge = DateTime.now().difference(_dashboardCacheTime!);
-      if (cacheAge.inSeconds < 30) {
-        print('📊 [DASHBOARD] Retornando dados do cache (${cacheAge.inSeconds}s)');
-        return _dashboardCache!;
-      }
-    }
-    
-    // Criar nova requisição
-    _dashboardFuture = _fetchDashboardData();
-    
-    try {
-      final result = await _dashboardFuture!;
-      _dashboardCache = result;
-      _dashboardCacheTime = DateTime.now();
-      return result;
-    } finally {
-      _dashboardFuture = null;
-    }
+    // TEMPORÁRIO: Sempre fazer nova requisição para debug
+    print('📊 [DASHBOARD] Fazendo requisição direta (sem cache)');
+    return await _fetchDashboardData();
   }
   
   Future<Map<String, dynamic>> _fetchDashboardData() async {
     try {
+      print('📊 [DASHBOARD] === INICIANDO NOVA REQUISIÇÃO ===');
       print('📊 [DASHBOARD] Fazendo requisição para /api/dashboard/stats...');
       print('📊 [DASHBOARD] URL: http://localhost:3001/api/dashboard/stats');
+      print('📊 [DASHBOARD] Timestamp: ${DateTime.now()}');
       
       // Buscar dados do dashboard da API com timeout maior
       final response = await http.get(

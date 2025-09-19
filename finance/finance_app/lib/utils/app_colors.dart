@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Material 3 Primary Colors - Verde moderno
-  static const Color primary = Color(0xFF006A4E); // Verde escuro mais moderno
+  // ERP Professional Primary Colors - Azul corporativo
+  static const Color primary = Color(0xFF1976D2); // Azul profissional
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color primaryContainer = Color(0xFF7DF3C4);
-  static const Color onPrimaryContainer = Color(0xFF002114);
+  static const Color primaryContainer = Color(0xFFE3F2FD);
+  static const Color onPrimaryContainer = Color(0xFF0D47A1);
   
-  // Material 3 Secondary Colors - Azul complementar
-  static const Color secondary = Color(0xFF4F6354);
+  // ERP Secondary Colors - Cinza neutro
+  static const Color secondary = Color(0xFF546E7A);
   static const Color onSecondary = Color(0xFFFFFFFF);
-  static const Color secondaryContainer = Color(0xFFD1E8D5);
-  static const Color onSecondaryContainer = Color(0xFF0D1F13);
+  static const Color secondaryContainer = Color(0xFFECEFF1);
+  static const Color onSecondaryContainer = Color(0xFF263238);
   
-  // Material 3 Tertiary Colors - Laranja de destaque
-  static const Color tertiary = Color(0xFF3E6837);
+  // ERP Tertiary Colors - Cinza azulado
+  static const Color tertiary = Color(0xFF607D8B);
   static const Color onTertiary = Color(0xFFFFFFFF);
-  static const Color tertiaryContainer = Color(0xFFBFEFB1);
-  static const Color onTertiaryContainer = Color(0xFF002200);
+  static const Color tertiaryContainer = Color(0xFFE0F2F1);
+  static const Color onTertiaryContainer = Color(0xFF37474F);
   
   // Material 3 Error Colors
   static const Color error = Color(0xFFBA1A1A);
@@ -25,45 +25,53 @@ class AppColors {
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF410002);
   
-  // Material 3 Surface Colors
-  static const Color surface = Color(0xFFF7FBF7);
-  static const Color onSurface = Color(0xFF181D19);
-  static const Color surfaceVariant = Color(0xFFDCE5DC);
-  static const Color onSurfaceVariant = Color(0xFF404943);
+  // ERP Surface Colors - Tons neutros
+  static const Color surface = Color(0xFFFAFAFA);
+  static const Color onSurface = Color(0xFF212121);
+  static const Color surfaceVariant = Color(0xFFF5F5F5);
+  static const Color onSurfaceVariant = Color(0xFF616161);
   
-  // Material 3 Background Colors
-  static const Color background = Color(0xFFF7FBF7);
-  static const Color onBackground = Color(0xFF181D19);
+  // ERP Background Colors - Branco e cinza claro
+  static const Color background = Color(0xFFFFFFFF);
+  static const Color onBackground = Color(0xFF212121);
   
-  // Material 3 Outline Colors
-  static const Color outline = Color(0xFF707973);
-  static const Color outlineVariant = Color(0xFFC0C9C0);
+  // ERP Outline Colors - Cinza neutro
+  static const Color outline = Color(0xFFBDBDBD);
+  static const Color outlineVariant = Color(0xFFE0E0E0);
   
-  // Cores de status personalizadas
-  static const Color statusActive = Color(0xFF006A4E);
-  static const Color statusInactive = Color(0xFF707973);
-  static const Color statusPending = Color(0xFFE65100);
-  static const Color statusOverdue = Color(0xFFBA1A1A);
-  static const Color statusPaid = Color(0xFF006A4E);
+  // Cores de status ERP profissionais
+  static const Color statusActive = Color(0xFF4CAF50);
+  static const Color statusInactive = Color(0xFF9E9E9E);
+  static const Color statusPending = Color(0xFFFF9800);
+  static const Color statusOverdue = Color(0xFFF44336);
+  static const Color statusPaid = Color(0xFF4CAF50);
   
-  // Gradientes Material 3
+  // Gradientes ERP profissionais
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF006A4E), Color(0xFF7DF3C4)],
+    colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
   static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [Color(0xFF4F6354), Color(0xFFD1E8D5)],
+    colors: [Color(0xFF546E7A), Color(0xFF90A4AE)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   
-  // Cores de elevação Material 3
-  static const Color surfaceTint = Color(0xFF006A4E);
+  // Cores ERP específicas
+  static const Color surfaceTint = Color(0xFF1976D2);
   static const Color shadow = Color(0xFF000000);
   static const Color scrim = Color(0xFF000000);
-  static const Color inverseSurface = Color(0xFF2D322E);
-  static const Color onInverseSurface = Color(0xFFEEF2EE);
-  static const Color inversePrimary = Color(0xFF60D6A9);
+  static const Color inverseSurface = Color(0xFF303030);
+  static const Color onInverseSurface = Color(0xFFF5F5F5);
+  static const Color inversePrimary = Color(0xFF90CAF9);
+  
+  // Cores específicas para ERP
+  static const Color sidebarBackground = Color(0xFF263238);
+  static const Color sidebarText = Color(0xFFFFFFFF);
+  static const Color sidebarTextSecondary = Color(0xFFB0BEC5);
+  static const Color headerBackground = Color(0xFFFFFFFF);
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color divider = Color(0xFFE0E0E0);
 }
