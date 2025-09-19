@@ -6,6 +6,7 @@ import '../widgets/client_list_widget.dart';
 import '../widgets/contract_list_widget.dart';
 import '../widgets/payment_list_widget.dart';
 import '../utils/app_colors.dart';
+import '../models/payment.dart';
 import 'clients_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -417,119 +418,226 @@ class _HomeScreenState extends State<HomeScreen> {
   
   Widget _buildOverduePayments(AppProvider provider) {
     final overduePayments = provider.getOverduePaymentsLocal();
+    final pendingNotOverduePayments = provider.payments
+        .where((payment) => 
+            payment.status == PaymentStatus.pending && 
+            !payment.isOverdue)
+        .toList();
     
-    if (overduePayments.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.green[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.green[200]!),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: Colors.green[600],
-              size: 32,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                'Parabéns! Não há pagamentos em atraso.',
-                style: TextStyle(
-                  color: Colors.green[800],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    // Criar lista limitada para evitar RangeError
-    final limitedOverduePayments = overduePayments.take(5).toList();
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.orange[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.orange[200]!),
-      ),
-      child: Column(
-        children: [
+    return Column(
+      children: [
+        // Pagamentos em atraso
+        if (overduePayments.isEmpty)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.orange[100],
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green[200]!),
             ),
             child: Row(
               children: [
                 Icon(
-                  Icons.warning,
-                  color: Colors.orange[800],
+                  Icons.check_circle,
+                  color: Colors.green[600],
+                  size: 32,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '${overduePayments.length} pagamento(s) em atraso',
-                  style: TextStyle(
-                    color: Colors.orange[800],
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Parabéns! Não há pagamentos em atraso.',
+                    style: TextStyle(
+                      color: Colors.green[800],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: limitedOverduePayments.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final payment = limitedOverduePayments[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.red[100],
-                  child: Icon(
-                    Icons.payment,
-                    color: Colors.red[600],
-                  ),
-                ),
-                title: Text('Parcela ${payment.installmentNumber}'),
-                subtitle: Text(
-                  'Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}\n'
-                  '${payment.daysOverdue} dias em atraso',
-                ),
-                trailing: Text(
-                  '€ ${payment.amount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                ),
-                isThreeLine: true,
-              );
-            },
-          ),
-          if (overduePayments.length > 5)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 3; // Navegar para aba de pagamentos
-                  });
-                },
-                child: const Text('Ver todos os pagamentos em atraso'),
-              ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange[200]!),
             ),
-        ],
-      ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[100],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning,
+                        color: Colors.orange[800],
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Pagamentos em Atraso (${overduePayments.length})',
+                          style: TextStyle(
+                            color: Colors.orange[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: overduePayments.take(5).length,
+                  itemBuilder: (context, index) {
+                    final payment = overduePayments[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.red[100],
+                        child: Icon(
+                          Icons.schedule,
+                          color: Colors.red[800],
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        'Parcela ${payment.installmentNumber}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Text(
+                        'Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}\n'
+                        '${payment.daysOverdue} dias em atraso',
+                      ),
+                      trailing: Text(
+                        '€ ${payment.amount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                      isThreeLine: true,
+                    );
+                  },
+                ),
+                if (overduePayments.length > 5)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedIndex = 3; // Navegar para aba de pagamentos
+                        });
+                      },
+                      child: const Text('Ver todos os pagamentos em atraso'),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        
+        // Espaçamento entre widgets
+        if (pendingNotOverduePayments.isNotEmpty) const SizedBox(height: 16),
+        
+        // Pagamentos pendentes não vencidos
+        if (pendingNotOverduePayments.isNotEmpty)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[100],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_outlined,
+                        color: Colors.blue[800],
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Próximos Vencimentos (${pendingNotOverduePayments.length})',
+                          style: TextStyle(
+                            color: Colors.blue[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: pendingNotOverduePayments.take(5).length,
+                  itemBuilder: (context, index) {
+                    final payment = pendingNotOverduePayments[index];
+                    final daysUntilDue = payment.daysUntilDue;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue[100],
+                        child: Icon(
+                          Icons.access_time,
+                          color: Colors.blue[800],
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        'Parcela ${payment.installmentNumber}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      subtitle: Text(
+                        'Vencimento: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}\n'
+                        '${daysUntilDue > 0 ? "Vence em $daysUntilDue dias" : "Vence hoje"}',
+                      ),
+                      trailing: Text(
+                        '€ ${payment.amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                      isThreeLine: true,
+                    );
+                  },
+                ),
+                if (pendingNotOverduePayments.length > 5)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedIndex = 3; // Navegar para aba de pagamentos
+                        });
+                      },
+                      child: const Text('Ver todos os próximos vencimentos'),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

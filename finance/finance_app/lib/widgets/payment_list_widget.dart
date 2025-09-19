@@ -13,7 +13,7 @@ class PaymentListWidget extends StatefulWidget {
 
 class _PaymentListWidgetState extends State<PaymentListWidget> {
   PaymentStatus? _selectedStatus;
-  String _selectedFilter = 'all'; // 'all', 'paid', 'unpaid', 'overdue'
+  String _selectedFilter = 'all'; // 'all', 'paid', 'unpaid', 'overdue', 'pending_not_overdue'
   bool _showFilters = false;
   DateTimeRange? _dateRange;
   String _searchQuery = '';
@@ -236,44 +236,85 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             const SizedBox(height: 16),
             
             // Filtro por status detalhado
-            DropdownButtonFormField<PaymentStatus?>(
-              value: _selectedStatus,
-              decoration: InputDecoration(
-                labelText: 'Status Específico',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              items: [
-                const DropdownMenuItem<PaymentStatus?>(
-                  value: null,
-                  child: Text('Todos os Status'),
-                ),
-                ...PaymentStatus.values.map(
-                  (status) => DropdownMenuItem<PaymentStatus?>(
-                    value: status,
-                    child: Row(
-                      children: [
-                        Icon(
-                          _getStatusIcon(status),
-                          size: 16,
-                          color: _getStatusColor(status),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(status.displayName),
-                      ],
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<PaymentStatus?>(
+                    value: _selectedStatus,
+                    decoration: InputDecoration(
+                      labelText: 'Status Específico',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
+                    items: [
+                      const DropdownMenuItem<PaymentStatus?>(
+                        value: null,
+                        child: Text('Todos os Status'),
+                      ),
+                      ...PaymentStatus.values.map(
+                        (status) => DropdownMenuItem<PaymentStatus?>(
+                          value: status,
+                          child: Row(
+                            children: [
+                              Icon(
+                                _getStatusIcon(status),
+                                size: 16,
+                                color: _getStatusColor(status),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(status.displayName),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value;
+                        _selectedFilter = 'all'; // Reset filter when status changes
+                      });
+                      _applyFilters(provider);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedFilter,
+                    decoration: InputDecoration(
+                      labelText: 'Filtro Especial',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    items: const [
+                      DropdownMenuItem<String>(
+                        value: 'all',
+                        child: Text('Todos'),
+                      ),
+                      DropdownMenuItem<String>(
+                        value: 'overdue',
+                        child: Text('Em Atraso'),
+                      ),
+                      DropdownMenuItem<String>(
+                        value: 'pending_not_overdue',
+                        child: Text('Pendentes (Não Vencidos)'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedFilter = value!;
+                      });
+                      _applySpecialFilter(provider);
+                    },
                   ),
                 ),
               ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedStatus = value;
-                });
-                _applyFilters(provider);
-              },
             ),
             const SizedBox(height: 16),
             
@@ -732,11 +773,51 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      );
    }
    
+   void _applySpecialFilter(AppProvider provider) {
+     bool? overdueFilter;
+     PaymentStatus? statusFilter;
+     
+     switch (_selectedFilter) {
+       case 'overdue':
+         overdueFilter = true;
+         break;
+       case 'pending_not_overdue':
+         statusFilter = PaymentStatus.pending;
+         overdueFilter = false;
+         break;
+       default:
+         // 'all' - no filters
+         break;
+     }
+     
+     provider.loadPayments(
+       status: statusFilter,
+       overdue: overdueFilter,
+     );
+   }
+   
    List<Payment> _getFilteredPayments(List<Payment> payments) {
      List<Payment> filtered = List.from(payments);
      
-     // Não aplicar filtros de status aqui pois a API já retorna filtrado
-     // Os filtros de status são aplicados via API no método _applyFilters
+     // Apply special filters first
+     switch (_selectedFilter) {
+       case 'overdue':
+         filtered = filtered.where((payment) => payment.isOverdue).toList();
+         break;
+       case 'pending_not_overdue':
+         filtered = filtered.where((payment) => 
+           payment.status == PaymentStatus.pending && !payment.isOverdue
+         ).toList();
+         break;
+       default:
+         // 'all' - no special filter
+         break;
+     }
+     
+     // Apply status filter if set
+     if (_selectedStatus != null) {
+       filtered = filtered.where((payment) => payment.status == _selectedStatus).toList();
+     }
      
      // Filtro por busca de texto
      if (_searchQuery.isNotEmpty) {
@@ -748,12 +829,12 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
        ).toList();
      }
      
-     // Filtro por período de data
+     // Apply date range filter if set
      if (_dateRange != null) {
-       filtered = filtered.where((p) => 
-         p.dueDate.isAfter(_dateRange!.start.subtract(const Duration(days: 1))) &&
-         p.dueDate.isBefore(_dateRange!.end.add(const Duration(days: 1)))
-       ).toList();
+       filtered = filtered.where((payment) {
+         return payment.dueDate.isAfter(_dateRange!.start.subtract(const Duration(days: 1))) &&
+                payment.dueDate.isBefore(_dateRange!.end.add(const Duration(days: 1)));
+       }).toList();
      }
      
      return filtered;
