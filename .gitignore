@@ -71,6 +71,11 @@ backup_*/
 *.backup
 *.bak
 
+# Large CSV files
+importBD/payments_rebuilt.csv
+importBD/payments.csv
+importBD/contratosAtivosFinal.csv
+
 # Temporary files
 *.tmp
 *.temp
