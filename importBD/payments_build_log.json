@@ -1,0 +1,431 @@
+{
+  "total_processed_contracts": 598,
+  "total_generated_payments": 11762,
+  "ignored_lines": [],
+  "errors": [
+    {
+      "line": 4,
+      "column": "set./25",
+      "value": "ß",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 23,
+      "column": "jul./25",
+      "value": "-5.327,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 32,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 154,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 155,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 160,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 175,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "fev./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "mar./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "abr./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "mai./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "jun./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 177,
+      "column": "jul./25",
+      "value": "-1.534,37",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 230,
+      "column": "mar./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 233,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 233,
+      "column": "jun./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 236,
+      "column": "jun./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 255,
+      "contract_key": "_Ativo",
+      "error": "Contrato não encontrado no mapeamento: _Ativo"
+    },
+    {
+      "line": 285,
+      "column": "set./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 285,
+      "column": "out./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 285,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 285,
+      "column": "dez./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 285,
+      "column": "jan./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 295,
+      "column": "nov./23",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 295,
+      "column": "fev./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 295,
+      "column": "mar./24",
+      "value": "0,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "mar./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "abr./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "mai./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "jun./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "jul./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "ago./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "set./25",
+      "value": "-1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "out./25",
+      "value": "1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "nov./25",
+      "value": "1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 334,
+      "column": "dez./25",
+      "value": "1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 364,
+      "column": "fev./25",
+      "value": "-7.372,87",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 364,
+      "column": "mar./25",
+      "value": "-7.372,87",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 364,
+      "column": "abr./25",
+      "value": "-7.372,67",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "jul./25",
+      "value": "-1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "ago./25",
+      "value": "-1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "set./25",
+      "value": "1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "out./25",
+      "value": "1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "nov./25",
+      "value": "1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 499,
+      "column": "dez./25",
+      "value": "1.017,50",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 506,
+      "column": "ago./25",
+      "value": "-1.160,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 506,
+      "column": "set./25",
+      "value": "1.160,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "ago./25",
+      "value": "-1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "set./25",
+      "value": "-1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "out./25",
+      "value": "1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "nov./25",
+      "value": "1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "dez./25",
+      "value": "1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 528,
+      "column": "jan./26",
+      "value": "1.080,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 551,
+      "column": "set./25",
+      "value": "-1.120,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 551,
+      "column": "out./25",
+      "value": "1.120,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 551,
+      "column": "nov./25",
+      "value": "1.120,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 551,
+      "column": "dez./25",
+      "value": "1.120,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 551,
+      "column": "jan./26",
+      "value": "1.120,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 568,
+      "column": "set./25",
+      "value": "-1.500,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 568,
+      "column": "ago./26",
+      "value": "1.000,00",
+      "error": "Valor inválido ou zero"
+    },
+    {
+      "line": 589,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 590,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 591,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 592,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 593,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 594,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 595,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 596,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 597,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 598,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    },
+    {
+      "line": 599,
+      "contract_key": "_",
+      "error": "Contrato não encontrado no mapeamento: _"
+    }
+  ],
+  "statistics": {
+    "by_status": {
+      "paid": 5766,
+      "pending": 5996
+    },
+    "by_payment_type": {
+      "downPayment": 181,
+      "normalPayment": 11581
+    }
+  }
+}
