@@ -67,15 +67,47 @@ class Payment {
   
   int get daysUntilDue => dueDate.difference(DateTime.now()).inDays;
 
+  static DateTime _parseDate(String dateStr) {
+    print('🔧 [PAYMENT_PARSE] Tentando fazer parse da data: "$dateStr"');
+    try {
+      // Tenta primeiro o formato ISO (YYYY-MM-DD)
+      final result = DateTime.parse(dateStr);
+      print('✅ [PAYMENT_PARSE] Sucesso com formato ISO: $result');
+      return result;
+    } catch (e) {
+      print('⚠️ [PAYMENT_PARSE] Falhou formato ISO, tentando brasileiro: $e');
+      try {
+        // Se falhar, tenta o formato brasileiro (DD/MM/YYYY)
+        final parts = dateStr.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          final result = DateTime(year, month, day);
+          print('✅ [PAYMENT_PARSE] Sucesso com formato brasileiro: $result');
+          return result;
+        } else {
+          print('❌ [PAYMENT_PARSE] Formato brasileiro inválido - partes: $parts');
+        }
+      } catch (e2) {
+        // Se ambos falharem, retorna data atual
+        print('❌ [PAYMENT_PARSE] Erro ao fazer parse da data: "$dateStr" - $e2');
+      }
+    }
+    final fallback = DateTime.now();
+    print('🔄 [PAYMENT_PARSE] Usando data atual como fallback: $fallback');
+    return fallback;
+  }
+
   factory Payment.fromJson(Map<String, dynamic> json) {
     return Payment(
       id: json['id'],
       contractId: json['contract_id'],
       installmentNumber: json['installment_number'] ?? 1,
       amount: (json['amount'] as num).toDouble(),
-      dueDate: DateTime.parse(json['due_date']),
+      dueDate: _parseDate(json['due_date']),
       paidDate: json['paid_date'] != null 
-          ? DateTime.parse(json['paid_date']) 
+          ? _parseDate(json['paid_date']) 
           : null,
       paymentMethod: json['payment_method'] != null
           ? PaymentMethod.values.firstWhere(
@@ -92,11 +124,11 @@ class Payment {
       notes: json['notes'],
       validatedBy: json['validated_by'],
       validatedAt: json['validated_at'] != null 
-          ? DateTime.parse(json['validated_at']) 
+          ? _parseDate(json['validated_at']) 
           : null,
       createdBy: json['created_by'] ?? 'system',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
+      updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
 
     );
   }

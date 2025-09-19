@@ -48,6 +48,28 @@ class Contract {
   bool get isDownPaymentValid => downPayment >= (totalAmount * 0.30);
   bool get isInstallmentsValid => installments >= 1 && installments <= 24;
 
+  static DateTime _parseDate(String dateStr) {
+    try {
+      // Tenta primeiro o formato ISO (YYYY-MM-DD)
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      try {
+        // Se falhar, tenta o formato brasileiro (DD/MM/YYYY)
+        final parts = dateStr.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          return DateTime(year, month, day);
+        }
+      } catch (e2) {
+        // Se ambos falharem, retorna data atual
+        print('Erro ao fazer parse da data: $dateStr - $e2');
+      }
+    }
+    return DateTime.now();
+  }
+
   factory Contract.fromJson(Map<String, dynamic> json) {
     return Contract(
       id: json['id']?.toString() ?? '',
@@ -68,8 +90,8 @@ class Contract {
       legalValidatedBy: json['legal_validated_by']?.toString(),
       notes: json['notes']?.toString() ?? '',
       createdBy: json['created_by']?.toString() ?? 'system',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : DateTime.now(),
+      createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
+      updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
     );
   }
 

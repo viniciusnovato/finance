@@ -39,6 +39,28 @@ class Client {
 
   String get fullName => '$firstName $lastName';
 
+  static DateTime _parseDate(String dateStr) {
+    try {
+      // Tenta primeiro o formato ISO (YYYY-MM-DD)
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      try {
+        // Se falhar, tenta o formato brasileiro (DD/MM/YYYY)
+        final parts = dateStr.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          return DateTime(year, month, day);
+        }
+      } catch (e2) {
+        // Se ambos falharem, retorna data atual
+        print('Erro ao fazer parse da data: $dateStr - $e2');
+      }
+    }
+    return DateTime.now();
+  }
+
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       id: json['id']?.toString() ?? '',
@@ -61,8 +83,8 @@ class Client {
       ),
       notes: json['notes']?.toString(),
       isActive: json['is_active'] ?? true,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : DateTime.now(),
+      createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
+      updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
     );
   }
 
