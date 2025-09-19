@@ -275,3 +275,6 @@ backup_*/
 importBD/payments_rebuilt.csv
 importBD/payments.csv
 importBD/contratosAtivosFinal.csv
+
+# Prompts directory - contains AI prompts and instructions
+prompts/
