@@ -28,10 +28,10 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     .from('payments')
     .select(`
       *,
-      contract:contracts(
+      contract:contracts!inner(
         id,
         contract_number,
-        client:clients(id, first_name, last_name, email)
+        client:clients!inner(id, first_name, last_name, email)
       )
     `, { count: 'exact' });
 
@@ -74,7 +74,38 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
 
   // Filtro de busca
   if (search) {
-    query = query.or(`contract.contract_number.ilike.%${search}%,notes.ilike.%${search}%`);
+    // Primeiro buscar clientes que correspondem ao termo
+    const { data: matchingClients } = await supabaseAdmin
+      .from('clients')
+      .select('id')
+      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+    
+    const clientIds = matchingClients?.map(c => c.id) || [];
+    
+    // Buscar contratos por número ou por client_id
+    let contractQuery = supabaseAdmin
+      .from('contracts')
+      .select('id');
+    
+    const searchConditions = [`contract_number.ilike.%${search}%`];
+    
+    if (clientIds.length > 0) {
+      const clientCondition = clientIds.map(id => `client_id.eq.${id}`).join(',');
+      searchConditions.push(clientCondition);
+    }
+    
+    contractQuery = contractQuery.or(searchConditions.join(','));
+    
+    const { data: matchingContracts } = await contractQuery;
+    
+    const contractIds = matchingContracts?.map(c => c.id) || [];
+    
+    // Aplicar filtro de busca nos pagamentos
+    if (contractIds.length > 0) {
+      query = query.or(`notes.ilike.%${search}%,contract_id.in.(${contractIds.join(',')})`);
+    } else {
+      query = query.ilike('notes', `%${search}%`);
+    }
   }
 
   // Ordenação e paginação

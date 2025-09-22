@@ -320,7 +320,7 @@ class AppProvider with ChangeNotifier {
     try {
       print('🔧 [PROVIDER] Chamando ApiService.getPayments...');
       print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, status=${status?.name}, overdue=$overdue, startDate=$startDate, endDate=$endDate');
-      _payments = await ApiService.getPayments(
+      _payments = await ApiService.getPaymentsList(
         search: null,
         limit: 200,
         contractId: contractId,
@@ -354,7 +354,7 @@ class AppProvider with ChangeNotifier {
   }) async {
     print('🔧 [PROVIDER] Carregamento silencioso de pagamentos...');
     try {
-      _payments = await ApiService.getPayments(
+      _payments = await ApiService.getPaymentsList(
         search: null,
         limit: 200,
         contractId: contractId,

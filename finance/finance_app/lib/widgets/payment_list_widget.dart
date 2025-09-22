@@ -446,7 +446,9 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mostrando ${filteredPayments.length} pagamentos',
+                _totalItems > 0 
+                  ? 'Mostrando ${filteredPayments.length} de $_totalItems pagamentos'
+                  : 'Mostrando ${filteredPayments.length} pagamentos',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.blue[700],
                   fontWeight: FontWeight.w500,
@@ -784,7 +786,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
         // Usar a busca de texto se houver
         String? searchTerm = _searchQuery.isNotEmpty ? _searchQuery : null;
         
-        final payments = await ApiService.getPayments(
+        final result = await ApiService.getPayments(
           page: _currentPage,
           limit: _itemsPerPage,
           search: searchTerm,
@@ -794,16 +796,15 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
           endDate: _dateRange?.end,
         );
         
-        // Simular informações de paginação (a API atual não retorna essas informações)
-        // Por enquanto, vamos assumir que se retornou menos que o limite, é a última página
+        final payments = result['payments'] as List<Payment>;
+        final pagination = result['pagination'] as Map<String, dynamic>;
+        
+        // Usar informações de paginação da API
         setState(() {
-          if (payments.length < _itemsPerPage) {
-            _totalPages = _currentPage;
-          } else {
-            // Estimar páginas baseado no número de resultados
-            _totalPages = _currentPage + 1; // Pelo menos mais uma página
-          }
-          _totalItems = payments.length;
+          _totalPages = pagination['pages'] ?? 1;
+          _totalItems = pagination['total'] ?? 0;
+          
+          print('🔧 [WIDGET] Paginação atualizada: página $_currentPage de $_totalPages, total: $_totalItems itens');
         });
         
         // Atualizar a lista no provider manualmente

@@ -31,7 +31,7 @@ class PaymentProvider with ChangeNotifier {
     _setLoading(true);
     try {
       print('🔧 [PAYMENT_PROVIDER] Chamando ApiService.getPayments...');
-      _payments = await ApiService.getPayments(
+      _payments = await ApiService.getPaymentsList(
         contractId: contractId,
         clientId: clientId,
         search: search,
@@ -66,7 +66,7 @@ class PaymentProvider with ChangeNotifier {
   }) async {
     print('🔧 [PAYMENT_PROVIDER] Carregamento silencioso de pagamentos...');
     try {
-      _payments = await ApiService.getPayments(
+      _payments = await ApiService.getPaymentsList(
         contractId: contractId,
         clientId: clientId,
         search: search,

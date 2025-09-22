@@ -35,7 +35,24 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
 
   // Filtro de busca
   if (search) {
-    query = query.or(`contract_number.ilike.%${search}%,description.ilike.%${search}%`);
+    // Primeiro buscar clientes que correspondem ao termo
+    const { data: matchingClients } = await supabaseAdmin
+      .from('clients')
+      .select('id')
+      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+    
+    const clientIds = matchingClients?.map(c => c.id) || [];
+    
+    // Criar condições de busca
+    const searchConditions = [`contract_number.ilike.%${search}%`, `description.ilike.%${search}%`];
+    
+    if (clientIds.length > 0) {
+      // Se encontrou clientes, adicionar condição de client_id
+      const clientCondition = clientIds.map(id => `client_id.eq.${id}`).join(',');
+      searchConditions.push(clientCondition);
+    }
+    
+    query = query.or(searchConditions.join(','));
   }
 
   // Filtro de status

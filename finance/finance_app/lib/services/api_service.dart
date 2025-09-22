@@ -7,7 +7,7 @@ import '../models/contract.dart';
 import '../models/payment.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:3001/api';
+  static const String baseUrl = 'http://localhost:3001/api';
   
   // Headers padrão (sem autenticação para desenvolvimento)
   static Future<Map<String, String>> _getHeaders() async {
@@ -231,7 +231,7 @@ class ApiService {
   // PAGAMENTOS
   // =====================================================
   
-  static Future<List<Payment>> getPayments({
+  static Future<Map<String, dynamic>> getPayments({
     int page = 1,
     int limit = 10,
     String? search,
@@ -264,12 +264,45 @@ class ApiService {
       _handleApiError(response);
       
       final data = json.decode(response.body);
-      return (data['payments'] as List)
+      final payments = (data['payments'] as List)
           .map((json) => Payment.fromJson(json))
           .toList();
+      
+      return {
+        'payments': payments,
+        'pagination': data['pagination'],
+      };
     } catch (e) {
       throw Exception('Erro ao buscar pagamentos: $e');
     }
+  }
+  
+  // Legacy method for backward compatibility
+  static Future<List<Payment>> getPaymentsList({
+    int page = 1,
+    int limit = 10,
+    String? search,
+    String? status,
+    String? contractId,
+    String? clientId,
+    String? paymentMethod,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool overdueOnly = false,
+  }) async {
+    final result = await getPayments(
+      page: page,
+      limit: limit,
+      search: search,
+      status: status,
+      contractId: contractId,
+      clientId: clientId,
+      paymentMethod: paymentMethod,
+      startDate: startDate,
+      endDate: endDate,
+      overdueOnly: overdueOnly,
+    );
+    return result['payments'] as List<Payment>;
   }
   
   static Future<Payment> getPayment(String id) async {

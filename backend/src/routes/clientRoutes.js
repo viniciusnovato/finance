@@ -24,7 +24,7 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
 
   // Filtro de busca
   if (search) {
-    query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,document.ilike.%${search}%,phone.ilike.%${search}%`);
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,document.ilike.%${search}%,phone.ilike.%${search}%`);
   }
 
   // Filtro de status
