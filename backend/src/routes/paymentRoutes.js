@@ -22,7 +22,11 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     end_date,
     overdue_only = false
   } = req.query;
-  const offset = (page - 1) * limit;
+  
+  // Parse pagination parameters as integers
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 10;
+  const offset = (pageNum - 1) * limitNum;
   
   let query = supabaseAdmin
     .from('payments')
@@ -78,7 +82,7 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     const { data: matchingClients } = await supabaseAdmin
       .from('clients')
       .select('id')
-      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,tax_id.ilike.%${search}%,phone.ilike.%${search}%,mobile.ilike.%${search}%`);
     
     const clientIds = matchingClients?.map(c => c.id) || [];
     
@@ -87,8 +91,12 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
       .from('contracts')
       .select('id');
     
-    const searchConditions = [`contract_number.ilike.%${search}%`];
+    const searchConditions = [];
     
+    // Busca exata por número do contrato
+    searchConditions.push(`contract_number.eq.${search}`);
+    
+    // Busca por clientes correspondentes
     if (clientIds.length > 0) {
       const clientCondition = clientIds.map(id => `client_id.eq.${id}`).join(',');
       searchConditions.push(clientCondition);
@@ -111,7 +119,7 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   // Ordenação e paginação
   query = query
     .order('due_date', { ascending: true })
-    .range(offset, offset + limit - 1);
+    .range(offset, offset + limitNum - 1);
 
   const { data, error, count } = await query;
 
@@ -126,10 +134,10 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   res.json({
     payments: data,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page: pageNum,
+      limit: limitNum,
       total: count,
-      pages: Math.ceil(count / limit)
+      pages: Math.ceil(count / limitNum)
     }
   });
 }));
