@@ -19,6 +19,14 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  String _getDropdownValue() {
+    // Mapeia valores dos filtros rápidos para valores válidos do dropdown
+    if (_selectedFilter == 'paid' || _selectedFilter == 'unpaid') {
+      return 'all';
+    }
+    return _selectedFilter;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -283,7 +291,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedFilter,
+                    value: _getDropdownValue(),
                     decoration: InputDecoration(
                       labelText: 'Filtro Especial',
                       border: OutlineInputBorder(
@@ -777,6 +785,11 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      bool? overdueFilter;
      PaymentStatus? statusFilter;
      
+     // Clear specific status when applying special filter
+     setState(() {
+       _selectedStatus = null;
+     });
+     
      switch (_selectedFilter) {
        case 'overdue':
          overdueFilter = true;
@@ -794,7 +807,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
        status: statusFilter,
        overdue: overdueFilter,
      );
-   }
+    }
    
    List<Payment> _getFilteredPayments(List<Payment> payments) {
      List<Payment> filtered = List.from(payments);
