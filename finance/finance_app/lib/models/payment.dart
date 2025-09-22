@@ -1,6 +1,8 @@
 class Payment {
   final String id;
   final String contractId;
+  final String? contractNumber;
+  final String? clientName;
   final int _installmentNumber;
   final double amount;
   final DateTime dueDate;
@@ -38,6 +40,8 @@ class Payment {
   Payment({
     required this.id,
     required this.contractId,
+    this.contractNumber,
+    this.clientName,
     required int installmentNumber,
     required this.amount,
     required this.dueDate,
@@ -100,9 +104,26 @@ class Payment {
   }
 
   factory Payment.fromJson(Map<String, dynamic> json) {
+    // Extrair dados do contrato e cliente se disponíveis
+    String? contractNumber;
+    String? clientName;
+    
+    if (json['contract'] != null) {
+      contractNumber = json['contract']['contract_number'];
+      if (json['contract']['client'] != null) {
+        final client = json['contract']['client'];
+        final firstName = client['first_name'] ?? '';
+        final lastName = client['last_name'] ?? '';
+        clientName = '${firstName.trim()} ${lastName.trim()}'.trim();
+        if (clientName!.isEmpty) clientName = null;
+      }
+    }
+    
     return Payment(
       id: json['id'],
       contractId: json['contract_id'],
+      contractNumber: contractNumber,
+      clientName: clientName,
       installmentNumber: json['installment_number'] ?? 1,
       amount: (json['amount'] as num).toDouble(),
       dueDate: _parseDate(json['due_date']),
@@ -157,6 +178,8 @@ class Payment {
   Payment copyWith({
     String? id,
     String? contractId,
+    String? contractNumber,
+    String? clientName,
     int? installmentNumber,
     double? amount,
     DateTime? dueDate,
@@ -176,6 +199,8 @@ class Payment {
     return Payment(
       id: id ?? this.id,
       contractId: contractId ?? this.contractId,
+      contractNumber: contractNumber ?? this.contractNumber,
+      clientName: clientName ?? this.clientName,
       installmentNumber: installmentNumber ?? this.installmentNumber,
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,

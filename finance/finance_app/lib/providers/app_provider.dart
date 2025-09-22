@@ -313,17 +313,21 @@ class AppProvider with ChangeNotifier {
     String? contractId,
     PaymentStatus? status,
     bool? overdue,
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     _setLoading(true);
     try {
       print('🔧 [PROVIDER] Chamando ApiService.getPayments...');
-      print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, status=${status?.name}, overdue=$overdue');
+      print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, status=${status?.name}, overdue=$overdue, startDate=$startDate, endDate=$endDate');
       _payments = await ApiService.getPayments(
         search: null,
         limit: 50,
         contractId: contractId,
         status: status?.name,
         overdueOnly: overdue ?? false,
+        startDate: startDate,
+        endDate: endDate,
       );
       print('🔧 [PROVIDER] Pagamentos carregados via API: ${_payments.length}');
       _error = null;

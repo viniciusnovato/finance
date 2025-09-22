@@ -19,13 +19,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  String _getDropdownValue() {
-    // Mapeia valores dos filtros rápidos para valores válidos do dropdown
-    if (_selectedFilter == 'paid' || _selectedFilter == 'unpaid') {
-      return 'all';
-    }
-    return _selectedFilter;
-  }
+
 
   @override
   void initState() {
@@ -34,7 +28,10 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print('🔧 [WIDGET] initState - carregando pagamentos iniciais');
       debugPrint('🔧 [WIDGET] initState - carregando pagamentos iniciais');
-      context.read<AppProvider>().loadPayments();
+      context.read<AppProvider>().loadPayments(
+        startDate: _dateRange?.start,
+        endDate: _dateRange?.end,
+      );
     });
   }
   
@@ -84,7 +81,10 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
               ElevatedButton.icon(
                 onPressed: () {
                   _clearFilters();
-                  provider.loadPayments();
+                  provider.loadPayments(
+                    startDate: _dateRange?.start,
+                    endDate: _dateRange?.end,
+                  );
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Atualizar'),
@@ -215,8 +215,8 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: 'Buscar por contrato ou parcela',
-                hintText: 'Digite o ID do contrato ou número da parcela',
+                labelText: 'Buscar por contrato ou cliente',
+                hintText: 'Digite o número do contrato ou nome do paciente',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -244,85 +244,45 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             const SizedBox(height: 16),
             
             // Filtro por status detalhado
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<PaymentStatus?>(
-                    value: _selectedStatus,
-                    decoration: InputDecoration(
-                      labelText: 'Status Específico',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    items: [
-                      const DropdownMenuItem<PaymentStatus?>(
-                        value: null,
-                        child: Text('Todos os Status'),
-                      ),
-                      ...PaymentStatus.values.map(
-                        (status) => DropdownMenuItem<PaymentStatus?>(
-                          value: status,
-                          child: Row(
-                            children: [
-                              Icon(
-                                _getStatusIcon(status),
-                                size: 16,
-                                color: _getStatusColor(status),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(status.displayName),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedStatus = value;
-                        _selectedFilter = 'all'; // Reset filter when status changes
-                      });
-                      _applyFilters(provider);
-                    },
-                  ),
+            DropdownButtonFormField<PaymentStatus?>(
+              value: _selectedStatus,
+              decoration: InputDecoration(
+                labelText: 'Status Específico',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _getDropdownValue(),
-                    decoration: InputDecoration(
-                      labelText: 'Filtro Especial',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              items: [
+                const DropdownMenuItem<PaymentStatus?>(
+                  value: null,
+                  child: Text('Todos os Status'),
+                ),
+                ...PaymentStatus.values.map(
+                  (status) => DropdownMenuItem<PaymentStatus?>(
+                    value: status,
+                    child: Row(
+                      children: [
+                        Icon(
+                          _getStatusIcon(status),
+                          size: 16,
+                          color: _getStatusColor(status),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(status.displayName),
+                      ],
                     ),
-                    items: const [
-                      DropdownMenuItem<String>(
-                        value: 'all',
-                        child: Text('Todos'),
-                      ),
-                      DropdownMenuItem<String>(
-                        value: 'overdue',
-                        child: Text('Em Atraso'),
-                      ),
-                      DropdownMenuItem<String>(
-                        value: 'pending_not_overdue',
-                        child: Text('Pendentes (Não Vencidos)'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedFilter = value!;
-                      });
-                      _applySpecialFilter(provider);
-                    },
                   ),
                 ),
               ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedStatus = value;
+                  _selectedFilter = 'all'; // Reset filter when status changes
+                });
+                _applyFilters(provider);
+              },
             ),
             const SizedBox(height: 16),
             
@@ -415,7 +375,10 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => provider.loadPayments(),
+              onPressed: () => provider.loadPayments(
+                startDate: _dateRange?.start,
+                endDate: _dateRange?.end,
+              ),
               child: const Text('Tentar Novamente'),
             ),
           ],
@@ -485,7 +448,10 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
         // Lista de pagamentos
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => provider.loadPayments(),
+            onRefresh: () => provider.loadPayments(
+              startDate: _dateRange?.start,
+              endDate: _dateRange?.end,
+            ),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: filteredPayments.length,
@@ -532,12 +498,20 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Contrato ID: ${payment.contractId}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                          'Número do Contrato: ${payment.contractNumber ?? payment.contractId}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
+                        if (payment.clientName != null && payment.clientName!.isNotEmpty)
+                          Text(
+                            'Cliente: ${payment.clientName}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                     ],
                   ),
                 ),
@@ -778,36 +752,12 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      provider.loadPayments(
        status: statusFilter,
        overdue: overdueFilter,
+       startDate: _dateRange?.start,
+       endDate: _dateRange?.end,
      );
    }
    
-   void _applySpecialFilter(AppProvider provider) {
-     bool? overdueFilter;
-     PaymentStatus? statusFilter;
-     
-     // Clear specific status when applying special filter
-     setState(() {
-       _selectedStatus = null;
-     });
-     
-     switch (_selectedFilter) {
-       case 'overdue':
-         overdueFilter = true;
-         break;
-       case 'pending_not_overdue':
-         statusFilter = PaymentStatus.pending;
-         overdueFilter = false;
-         break;
-       default:
-         // 'all' - no filters
-         break;
-     }
-     
-     provider.loadPayments(
-       status: statusFilter,
-       overdue: overdueFilter,
-     );
-    }
+
    
    List<Payment> _getFilteredPayments(List<Payment> payments) {
      List<Payment> filtered = List.from(payments);
@@ -833,22 +783,19 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      }
      
      // Filtro por busca de texto
-     if (_searchQuery.isNotEmpty) {
-       final query = _searchQuery.toLowerCase();
-       filtered = filtered.where((p) => 
-         p.contractId.toLowerCase().contains(query) ||
-         p.installmentNumber.toString().contains(query) ||
-         p.id.toLowerCase().contains(query)
-       ).toList();
-     }
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered = filtered.where((p) => 
+        (p.contractNumber?.toLowerCase().contains(query) ?? false) ||
+        (p.clientName?.toLowerCase().contains(query) ?? false) ||
+        p.contractId.toLowerCase().contains(query) ||
+        p.installmentNumber.toString().contains(query) ||
+        p.id.toLowerCase().contains(query)
+      ).toList();
+    }
      
-     // Apply date range filter if set
-     if (_dateRange != null) {
-       filtered = filtered.where((payment) {
-         return payment.dueDate.isAfter(_dateRange!.start.subtract(const Duration(days: 1))) &&
-                payment.dueDate.isBefore(_dateRange!.end.add(const Duration(days: 1)));
-       }).toList();
-     }
+     // Date range filter is now applied on the backend
+     // No need for local date filtering
      
      return filtered;
    }
