@@ -322,7 +322,7 @@ class AppProvider with ChangeNotifier {
       print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, status=${status?.name}, overdue=$overdue, startDate=$startDate, endDate=$endDate');
       _payments = await ApiService.getPayments(
         search: null,
-        limit: 50,
+        limit: 200,
         contractId: contractId,
         status: status?.name,
         overdueOnly: overdue ?? false,
@@ -339,6 +339,13 @@ class AppProvider with ChangeNotifier {
     }
   }
 
+  // Método para atualizar a lista de pagamentos diretamente
+  void updatePaymentsList(List<Payment> payments) {
+    _payments = payments;
+    _error = null;
+    notifyListeners();
+  }
+
   // Versão silenciosa que não altera o estado de loading
   Future<void> loadPaymentsQuiet({
     String? contractId,
@@ -349,7 +356,7 @@ class AppProvider with ChangeNotifier {
     try {
       _payments = await ApiService.getPayments(
         search: null,
-        limit: 50,
+        limit: 200,
         contractId: contractId,
         status: status?.name,
         overdueOnly: overdue ?? false,

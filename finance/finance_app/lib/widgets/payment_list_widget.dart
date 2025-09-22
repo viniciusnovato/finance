@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/payment.dart';
 import '../utils/app_colors.dart';
+import '../services/api_service.dart';
 
 class PaymentListWidget extends StatefulWidget {
   const PaymentListWidget({super.key});
@@ -18,6 +19,12 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
   DateTimeRange? _dateRange;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  
+  // Variáveis de paginação
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _totalItems = 0;
+  final int _itemsPerPage = 20;
 
 
 
@@ -430,28 +437,38 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
     
     return Column(
       children: [
-        // Contador de resultados
-        if (filteredPayments.length != provider.payments.length)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.blue.withOpacity(0.1),
-            child: Text(
-              'Mostrando ${filteredPayments.length} de ${provider.payments.length} pagamentos',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.w500,
+        // Contador de resultados e informações de paginação
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: Colors.blue.withOpacity(0.1),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Mostrando ${filteredPayments.length} pagamentos',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.blue[700],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
+              if (_totalPages > 1)
+                Text(
+                  'Página $_currentPage de $_totalPages',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.blue[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+            ],
           ),
+        ),
         // Lista de pagamentos
         Expanded(
           child: RefreshIndicator(
-            onRefresh: () => provider.loadPayments(
-              startDate: _dateRange?.start,
-              endDate: _dateRange?.end,
-            ),
+            onRefresh: () async {
+              _applyFilters(provider, resetPage: false);
+            },
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: filteredPayments.length,
@@ -463,6 +480,8 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             ),
           ),
         ),
+        // Controles de paginação
+        if (_totalPages > 1) _buildPaginationControls(provider),
       ],
     );
   }
@@ -718,16 +737,24 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
       _dateRange = null;
       _searchQuery = '';
       _searchController.clear();
+      _currentPage = 1;
+      _totalPages = 1;
+      _totalItems = 0;
     });
   }
   
-  void _applyFilters(AppProvider provider) {
+  void _applyFilters(AppProvider provider, {bool resetPage = true}) {
+     // Resetar página quando aplicar novos filtros
+     if (resetPage) {
+       _currentPage = 1;
+     }
+     
      // Aplicar filtros baseados no estado atual
      PaymentStatus? statusFilter;
      bool? overdueFilter;
      
-     print('🔧 [WIDGET] _applyFilters chamado com _selectedFilter: $_selectedFilter');
-     debugPrint('🔧 [WIDGET] _applyFilters chamado com _selectedFilter: $_selectedFilter');
+     print('🔧 [WIDGET] _applyFilters chamado com _selectedFilter: $_selectedFilter, página: $_currentPage');
+     debugPrint('🔧 [WIDGET] _applyFilters chamado com _selectedFilter: $_selectedFilter, página: $_currentPage');
      
      // Converter filtro rápido para parâmetros específicos
      switch (_selectedFilter) {
@@ -748,18 +775,46 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      print('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter');
      debugPrint('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter');
      
-     // Carregar pagamentos com os filtros corretos
-     provider.loadPayments(
-       status: statusFilter,
-       overdue: overdueFilter,
-       startDate: _dateRange?.start,
-       endDate: _dateRange?.end,
-     );
-   }
-   
-
-   
-   List<Payment> _getFilteredPayments(List<Payment> payments) {
+     _loadPaymentsWithPagination(provider, statusFilter, overdueFilter);
+     }
+     
+    // Método para carregar pagamentos com paginação
+    Future<void> _loadPaymentsWithPagination(AppProvider provider, PaymentStatus? statusFilter, bool? overdueFilter) async {
+      try {
+        // Usar a busca de texto se houver
+        String? searchTerm = _searchQuery.isNotEmpty ? _searchQuery : null;
+        
+        final payments = await ApiService.getPayments(
+          page: _currentPage,
+          limit: _itemsPerPage,
+          search: searchTerm,
+          status: statusFilter?.name,
+          overdueOnly: overdueFilter ?? false,
+          startDate: _dateRange?.start,
+          endDate: _dateRange?.end,
+        );
+        
+        // Simular informações de paginação (a API atual não retorna essas informações)
+        // Por enquanto, vamos assumir que se retornou menos que o limite, é a última página
+        setState(() {
+          if (payments.length < _itemsPerPage) {
+            _totalPages = _currentPage;
+          } else {
+            // Estimar páginas baseado no número de resultados
+            _totalPages = _currentPage + 1; // Pelo menos mais uma página
+          }
+          _totalItems = payments.length;
+        });
+        
+        // Atualizar a lista no provider manualmente
+        provider.updatePaymentsList(payments);
+        
+      } catch (e) {
+        print('❌ [WIDGET] Erro ao carregar pagamentos paginados: $e');
+      }
+    }
+     
+    List<Payment> _getFilteredPayments(List<Payment> payments) {
      List<Payment> filtered = List.from(payments);
      
      // Apply special filters first
@@ -785,20 +840,88 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      // Filtro por busca de texto
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      filtered = filtered.where((p) => 
-        (p.contractNumber?.toLowerCase().contains(query) ?? false) ||
-        (p.clientName?.toLowerCase().contains(query) ?? false) ||
-        p.contractId.toLowerCase().contains(query) ||
-        p.installmentNumber.toString().contains(query) ||
-        p.id.toLowerCase().contains(query)
-      ).toList();
+      filtered = filtered.where((p) {
+        // Se a query é um número, fazer busca exata no número do contrato
+        if (RegExp(r'^\d+$').hasMatch(query)) {
+          return p.contractNumber?.toLowerCase() == query;
+        }
+        // Caso contrário, fazer busca por conteúdo
+        return (p.contractNumber?.toLowerCase().contains(query) ?? false) ||
+               (p.clientName?.toLowerCase().contains(query) ?? false) ||
+               p.contractId.toLowerCase().contains(query) ||
+               p.installmentNumber.toString().contains(query) ||
+               p.id.toLowerCase().contains(query);
+      }).toList();
     }
      
      // Date range filter is now applied on the backend
      // No need for local date filtering
      
      return filtered;
-   }
+    }
+    
+    // Widget para controles de paginação
+    Widget _buildPaginationControls(AppProvider provider) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Botão página anterior
+            ElevatedButton.icon(
+              onPressed: _currentPage > 1 ? () {
+                setState(() {
+                  _currentPage--;
+                });
+                _applyFilters(provider, resetPage: false);
+              } : null,
+              icon: const Icon(Icons.chevron_left),
+              label: const Text('Anterior'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[200],
+                foregroundColor: Colors.black87,
+              ),
+            ),
+            
+            // Indicador de página atual
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$_currentPage / $_totalPages',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            
+            // Botão próxima página
+            ElevatedButton.icon(
+              onPressed: _currentPage < _totalPages ? () {
+                setState(() {
+                  _currentPage++;
+                });
+                _applyFilters(provider, resetPage: false);
+              } : null,
+              icon: const Icon(Icons.chevron_right),
+              label: const Text('Próxima'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[200],
+                foregroundColor: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   
   Future<void> _selectDateRange(AppProvider provider) async {
     final DateTimeRange? picked = await showDateRangePicker(

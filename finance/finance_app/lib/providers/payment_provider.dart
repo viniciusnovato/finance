@@ -40,7 +40,7 @@ class PaymentProvider with ChangeNotifier {
         startDate: startDate,
         endDate: endDate,
         overdueOnly: overdueOnly,
-        limit: 50,
+        limit: 200,
       );
       print('🔧 [PAYMENT_PROVIDER] Pagamentos carregados via API: ${_payments.length}');
       _error = null;
@@ -75,7 +75,7 @@ class PaymentProvider with ChangeNotifier {
         startDate: startDate,
         endDate: endDate,
         overdueOnly: overdueOnly,
-        limit: 50,
+        limit: 200,
       );
       print('🔧 [PAYMENT_PROVIDER] Pagamentos carregados silenciosamente: ${_payments.length}');
       _error = null;
