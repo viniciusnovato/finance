@@ -431,6 +431,12 @@ class AppProvider with ChangeNotifier {
           'total_clients': stats['clients']?['total'] ?? 0,
           'active_contracts': stats['contracts']?['active'] ?? 0,
           'overdue_payments': stats['payments']?['overdue'] ?? 0,
+          'payments': {
+            'pending': stats['payments']?['pending'] ?? 0,
+            'paid': stats['payments']?['paid'] ?? 0,
+            'overdue': stats['payments']?['overdue'] ?? 0,
+            'total': stats['payments']?['total'] ?? 0,
+          },
           'total_receivable': stats['payment_summary']?['total_amount_remaining'] ?? 0.0,
           'total_received': stats['payment_summary']?['total_amount_paid'] ?? 0.0,
           'payment_summary': {

@@ -31,11 +31,16 @@ function calculatePaymentPercentage(contract, payments = []) {
   const installmentAmount = numberOfPayments > 0 ? (totalAmount - downPayment) / numberOfPayments : 0;
   
   // Implementar a fórmula correta conforme as instruções:
-  // percentual pago = (Down Payment + Comp I + Comp II + Parcelas Pagas) / Valor Total * 100
+  // percentual pago = (Down Payment + Pagamentos Entrada + Comp I + Comp II + Parcelas Pagas) / Valor Total * 100
   
-  // 1. Down Payment já obtido do contrato
+  // 1. Down Payment do contrato
   
-  // 2. Complementos I e II - buscar na tabela payments pelo campo notes
+  // 2. Pagamentos de entrada da tabela payments (payment_type = 'downPayment')
+  const downPaymentsFromTable = payments
+    .filter(p => p.payment_type === 'downPayment' && p.status === 'paid')
+    .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+  
+  // 3. Complementos I e II - buscar na tabela payments pelo campo notes
   const compI = payments
     .filter(p => p.notes === 'Comp I')
     .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
@@ -44,13 +49,13 @@ function calculatePaymentPercentage(contract, payments = []) {
     .filter(p => p.notes === 'Comp II')
     .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
   
-  // 3. Parcelas pagas - filtrar por status = 'paid' e payment_type = 'normalPayment'
+  // 4. Parcelas pagas - filtrar por status = 'paid' e payment_type = 'normalPayment'
   const normalPaymentsPaid = payments
     .filter(p => p.status === 'paid' && p.payment_type === 'normalPayment')
     .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
   
-  // 4. Calcular total pago conforme a fórmula
-  const totalPaid = downPayment + compI + compII + normalPaymentsPaid;
+  // 5. Calcular total pago conforme a fórmula
+  const totalPaid = downPayment + downPaymentsFromTable + compI + compII + normalPaymentsPaid;
   
   // 5. Calcular porcentagem com validações
   let percentagePaid = (totalPaid / totalAmount) * 100;
@@ -71,6 +76,7 @@ function calculatePaymentPercentage(contract, payments = []) {
     payments_made: paidPayments.length,
     payments_remaining: paymentsRemaining,
     down_payment: downPayment,
+    down_payments_from_table: Math.round(downPaymentsFromTable * 100) / 100,
     comp_i: Math.round(compI * 100) / 100,
     comp_ii: Math.round(compII * 100) / 100,
     normal_payments_paid: Math.round(normalPaymentsPaid * 100) / 100,
