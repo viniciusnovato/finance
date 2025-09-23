@@ -19,6 +19,7 @@ class Contract {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final PaymentInfo? paymentInfo;
 
   const Contract({
     required this.id,
@@ -39,6 +40,7 @@ class Contract {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    this.paymentInfo,
   });
 
   // Getters para cálculos básicos
@@ -92,6 +94,7 @@ class Contract {
       createdBy: json['created_by']?.toString() ?? 'system',
       createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
+      paymentInfo: json['payment_info'] != null ? PaymentInfo.fromJson(json['payment_info']) : null,
     );
   }
 
@@ -217,5 +220,41 @@ enum ContractStatus {
       case ContractStatus.closed:
         return 'closed';
     }
+  }
+}
+
+class PaymentInfo {
+  final double percentagePaid;
+  final double totalPaid;
+  final double remainingAmount;
+  final int paidInstallments;
+  final int totalInstallments;
+
+  const PaymentInfo({
+    required this.percentagePaid,
+    required this.totalPaid,
+    required this.remainingAmount,
+    required this.paidInstallments,
+    required this.totalInstallments,
+  });
+
+  factory PaymentInfo.fromJson(Map<String, dynamic> json) {
+    return PaymentInfo(
+      percentagePaid: (json['percentage_paid'] ?? 0).toDouble(),
+      totalPaid: (json['amount_paid'] ?? json['total_paid'] ?? 0).toDouble(),
+      remainingAmount: (json['amount_remaining'] ?? json['remaining_amount'] ?? 0).toDouble(),
+      paidInstallments: json['paid_installments'] ?? 0,
+      totalInstallments: json['total_installments'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'percentage_paid': percentagePaid,
+      'total_paid': totalPaid,
+      'remaining_amount': remainingAmount,
+      'paid_installments': paidInstallments,
+      'total_installments': totalInstallments,
+    };
   }
 }

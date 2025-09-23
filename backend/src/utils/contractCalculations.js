@@ -9,7 +9,8 @@
  * @returns {Object} Objeto com informações de pagamento
  */
 function calculatePaymentPercentage(contract, payments = []) {
-  const totalAmount = parseFloat(contract.value || contract.total_amount || 0);
+  // Usar total_value conforme especificado nas instruções
+  const totalAmount = parseFloat(contract.total_value || contract.value || contract.total_amount || 0);
   const downPayment = parseFloat(contract.down_payment || 0);
   const numberOfPayments = parseInt(contract.number_of_payments || 0);
   
@@ -29,23 +30,50 @@ function calculatePaymentPercentage(contract, payments = []) {
   // Calcular valor das parcelas (total - entrada) / número de parcelas
   const installmentAmount = numberOfPayments > 0 ? (totalAmount - downPayment) / numberOfPayments : 0;
   
-  // Calcular total pago (entrada + parcelas pagas)
-  const paidPayments = payments.filter(p => p.status === 'paid');
-  const installmentsPaid = paidPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-  const totalPaid = downPayment + installmentsPaid;
+  // Implementar a fórmula correta conforme as instruções:
+  // percentual pago = (Down Payment + Comp I + Comp II + Parcelas Pagas) / Valor Total * 100
   
-  // Calcular porcentagem
-  const percentagePaid = (totalPaid / totalAmount) * 100;
-  const amountRemaining = totalAmount - totalPaid;
+  // 1. Down Payment já obtido do contrato
+  
+  // 2. Complementos I e II - buscar na tabela payments pelo campo notes
+  const compI = payments
+    .filter(p => p.notes === 'Comp I')
+    .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+  
+  const compII = payments
+    .filter(p => p.notes === 'Comp II')
+    .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+  
+  // 3. Parcelas pagas - filtrar por status = 'paid' e payment_type = 'normalPayment'
+  const normalPaymentsPaid = payments
+    .filter(p => p.status === 'paid' && p.payment_type === 'normalPayment')
+    .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+  
+  // 4. Calcular total pago conforme a fórmula
+  const totalPaid = downPayment + compI + compII + normalPaymentsPaid;
+  
+  // 5. Calcular porcentagem com validações
+  let percentagePaid = (totalPaid / totalAmount) * 100;
+  
+  // Limitar a 100% se o valor pago for maior que o total
+  if (percentagePaid > 100) {
+    percentagePaid = 100;
+  }
+  
+  const amountRemaining = Math.max(0, totalAmount - totalPaid);
+  const paidPayments = payments.filter(p => p.status === 'paid');
   const paymentsRemaining = Math.max(0, numberOfPayments - paidPayments.length);
   
   return {
-    percentage_paid: Math.round(percentagePaid * 100) / 100,
+    percentage_paid: Math.round(percentagePaid * 100) / 100, // 2 casas decimais
     amount_paid: Math.round(totalPaid * 100) / 100,
     amount_remaining: Math.round(amountRemaining * 100) / 100,
     payments_made: paidPayments.length,
     payments_remaining: paymentsRemaining,
     down_payment: downPayment,
+    comp_i: Math.round(compI * 100) / 100,
+    comp_ii: Math.round(compII * 100) / 100,
+    normal_payments_paid: Math.round(normalPaymentsPaid * 100) / 100,
     installment_amount: Math.round(installmentAmount * 100) / 100,
     is_fully_paid: percentagePaid >= 100
   };

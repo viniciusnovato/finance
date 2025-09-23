@@ -404,10 +404,36 @@ class _ContractListWidgetState extends State<ContractListWidget> {
               ],
             ),
             const SizedBox(height: 4),
-
+            // Informações de pagamento
+            if (contract.paymentInfo != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.percent, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Pago: ${contract.paymentInfo!.percentagePaid.toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '€ ${contract.paymentInfo!.totalPaid.toStringAsFixed(2)} / € ${contract.totalAmount.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+               ),
+             ],
             const SizedBox(height: 12),
             LinearProgressIndicator(
-              value: 0.0,
+              value: contract.paymentInfo != null 
+                  ? (contract.paymentInfo!.percentagePaid / 100.0).clamp(0.0, 1.0)
+                  : 0.0,
               backgroundColor: Colors.grey[300],
               valueColor: AlwaysStoppedAnimation<Color>(
                 _getStatusColor(contract.status),

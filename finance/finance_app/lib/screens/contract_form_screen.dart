@@ -26,7 +26,7 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
   String? _selectedClientId;
   DateTime? _startDate;
   DateTime? _endDate;
-  ContractStatus _status = ContractStatus.active;
+  ContractStatus? _status = ContractStatus.active;
   bool _isLoading = false;
   List<Client> _clients = [];
 
@@ -40,11 +40,61 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
   }
 
   Future<void> _loadClients() async {
-    final provider = context.read<AppProvider>();
-    await provider.loadClients();
-    setState(() {
-      _clients = provider.clients;
-    });
+    try {
+      final provider = context.read<AppProvider>();
+      await provider.loadClients();
+      setState(() {
+        _clients = provider.clients;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar clientes: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Helper method to get unique clients (remove duplicates by ID)
+  List<Client> _getUniqueClients() {
+    final Map<String, Client> uniqueClientsMap = {};
+    for (final client in _clients) {
+      uniqueClientsMap[client.id] = client;
+    }
+    return uniqueClientsMap.values.toList();
+  }
+
+  // Helper method to ensure selected client ID is valid
+  String? _getValidSelectedClientId() {
+    if (_selectedClientId == null) return null;
+    
+    final uniqueClients = _getUniqueClients();
+    final clientExists = uniqueClients.any((client) => client.id == _selectedClientId);
+    
+    if (!clientExists) {
+      // If selected client doesn't exist in current list, reset selection
+      _selectedClientId = null;
+      return null;
+    }
+    
+    return _selectedClientId;
+  }
+
+  // Helper method to ensure contract status is valid
+  ContractStatus? _getValidContractStatus() {
+    if (_status == null) return null;
+    
+    // Check if the current status is still valid (exists in enum)
+    if (ContractStatus.values.contains(_status)) {
+      return _status;
+    }
+    
+    // If status is invalid, reset to null
+    _status = null;
+    return null;
   }
 
   void _populateFields() {
@@ -136,7 +186,7 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
             : _notesController.text.trim(),
         startDate: _startDate,
         endDate: _endDate,
-        status: _status,
+        status: _status ?? ContractStatus.draft,
         createdBy: 'current_user', // TODO: Get from auth context
         createdAt: widget.contract?.createdAt ?? now,
         updatedAt: now,
@@ -223,13 +273,13 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _selectedClientId,
+                      value: _getValidSelectedClientId(),
                       decoration: const InputDecoration(
                         labelText: 'Cliente *',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.person),
                       ),
-                      items: _clients.map((client) {
+                      items: _getUniqueClients().map((client) {
                         return DropdownMenuItem(
                           value: client.id,
                           child: Text('${client.firstName} ${client.lastName}'),
@@ -465,7 +515,7 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<ContractStatus>(
-                      value: _status,
+                      value: _getValidContractStatus(),
                       decoration: const InputDecoration(
                         labelText: 'Status do Contrato',
                         border: OutlineInputBorder(),
@@ -479,8 +529,14 @@ class _ContractFormScreenState extends State<ContractFormScreen> {
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          _status = value!;
+                          _status = value;
                         });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Selecione um status para o contrato';
+                        }
+                        return null;
                       },
                     ),
                     const SizedBox(height: 16),

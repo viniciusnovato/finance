@@ -14,6 +14,7 @@ class Payment {
   final String? notes;
   final String? validatedBy;
   final DateTime? validatedAt;
+  final PaymentType? paymentType;
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -53,6 +54,7 @@ class Payment {
     this.notes,
     this.validatedBy,
     this.validatedAt,
+    this.paymentType,
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
@@ -147,6 +149,12 @@ class Payment {
       validatedAt: json['validated_at'] != null 
           ? _parseDate(json['validated_at']) 
           : null,
+      paymentType: json['payment_type'] != null
+          ? PaymentType.values.firstWhere(
+              (e) => e.name == json['payment_type'],
+              orElse: () => PaymentType.installment,
+            )
+          : null,
       createdBy: json['created_by'] ?? 'system',
       createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
@@ -169,6 +177,7 @@ class Payment {
       'notes': notes,
       'validated_by': validatedBy,
       'validated_at': validatedAt?.toIso8601String(),
+      'payment_type': paymentType?.name,
       'created_by': createdBy,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -191,6 +200,7 @@ class Payment {
     String? notes,
     String? validatedBy,
     DateTime? validatedAt,
+    PaymentType? paymentType,
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -212,6 +222,7 @@ class Payment {
       notes: notes ?? this.notes,
       validatedBy: validatedBy ?? this.validatedBy,
       validatedAt: validatedAt ?? this.validatedAt,
+      paymentType: paymentType ?? this.paymentType,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -302,6 +313,44 @@ enum PaymentMethod {
         return 'direct_debit';
       case PaymentMethod.paymentOrder:
         return 'payment_order';
+    }
+  }
+}
+
+enum PaymentType {
+  downPayment,
+  installment,
+  finalPayment,
+  penalty,
+  adjustment;
+
+  String get displayName {
+    switch (this) {
+      case PaymentType.downPayment:
+        return 'Entrada';
+      case PaymentType.installment:
+        return 'Prestação';
+      case PaymentType.finalPayment:
+        return 'Pagamento Final';
+      case PaymentType.penalty:
+        return 'Multa';
+      case PaymentType.adjustment:
+        return 'Ajuste';
+    }
+  }
+
+  String get name {
+    switch (this) {
+      case PaymentType.downPayment:
+        return 'downPayment';
+      case PaymentType.installment:
+        return 'installment';
+      case PaymentType.finalPayment:
+        return 'finalPayment';
+      case PaymentType.penalty:
+        return 'penalty';
+      case PaymentType.adjustment:
+        return 'adjustment';
     }
   }
 }

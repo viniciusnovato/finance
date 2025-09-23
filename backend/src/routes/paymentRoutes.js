@@ -18,6 +18,7 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     contract_id, 
     client_id, 
     payment_method,
+    payment_type,
     start_date, 
     end_date,
     overdue_only = false
@@ -60,6 +61,11 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   // Filtro de método de pagamento
   if (payment_method) {
     query = query.eq('payment_method', payment_method);
+  }
+
+  // Filtro de tipo de pagamento
+  if (payment_type) {
+    query = query.eq('payment_type', payment_type);
   }
 
   // Filtro de data de vencimento

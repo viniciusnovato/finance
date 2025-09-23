@@ -14,7 +14,7 @@ class PaymentListWidget extends StatefulWidget {
 
 class _PaymentListWidgetState extends State<PaymentListWidget> {
   PaymentStatus? _selectedStatus;
-  String _selectedFilter = 'all'; // 'all', 'paid', 'unpaid', 'overdue', 'pending_not_overdue'
+  String _selectedFilter = 'all'; // 'all', 'paid', 'unpaid', 'overdue', 'pending_not_overdue', 'down_payment'
   bool _showFilters = false;
   DateTimeRange? _dateRange;
   String _searchQuery = '';
@@ -151,6 +151,14 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             'overdue',
             Icons.warning,
             Colors.red,
+            provider,
+          ),
+          const SizedBox(width: 8),
+          _buildFilterChip(
+            'Entrada',
+            'down_payment',
+            Icons.account_balance_wallet,
+            Colors.purple,
             provider,
           ),
         ],
@@ -759,6 +767,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
      debugPrint('🔧 [WIDGET] _applyFilters chamado com _selectedFilter: $_selectedFilter, página: $_currentPage');
      
      // Converter filtro rápido para parâmetros específicos
+     String? paymentTypeFilter;
      switch (_selectedFilter) {
        case 'paid':
          statusFilter = PaymentStatus.paid;
@@ -770,18 +779,22 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
          // Para pagamentos em atraso, usar o parâmetro overdue da API
          overdueFilter = true;
          break;
+       case 'down_payment':
+         // Para entrada, usar o filtro de payment_type
+         paymentTypeFilter = 'downPayment';
+         break;
        default:
          statusFilter = _selectedStatus;
      }
      
-     print('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter');
-     debugPrint('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter');
+     print('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter, paymentTypeFilter: $paymentTypeFilter');
+     debugPrint('🔧 [WIDGET] statusFilter: ${statusFilter?.name}, overdueFilter: $overdueFilter, paymentTypeFilter: $paymentTypeFilter');
      
-     _loadPaymentsWithPagination(provider, statusFilter, overdueFilter);
+     _loadPaymentsWithPagination(provider, statusFilter, overdueFilter, paymentTypeFilter);
      }
      
     // Método para carregar pagamentos com paginação
-    Future<void> _loadPaymentsWithPagination(AppProvider provider, PaymentStatus? statusFilter, bool? overdueFilter) async {
+    Future<void> _loadPaymentsWithPagination(AppProvider provider, PaymentStatus? statusFilter, bool? overdueFilter, String? paymentTypeFilter) async {
       try {
         // Usar a busca de texto se houver
         String? searchTerm = _searchQuery.isNotEmpty ? _searchQuery : null;
@@ -791,6 +804,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
           limit: _itemsPerPage,
           search: searchTerm,
           status: statusFilter?.name,
+          paymentType: paymentTypeFilter,
           overdueOnly: overdueFilter ?? false,
           startDate: _dateRange?.start,
           endDate: _dateRange?.end,
@@ -818,18 +832,15 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
     List<Payment> _getFilteredPayments(List<Payment> payments) {
      List<Payment> filtered = List.from(payments);
      
-     // Apply special filters first
+     // Apply special filters first (only for filters not handled by backend)
      switch (_selectedFilter) {
-       case 'overdue':
-         filtered = filtered.where((payment) => payment.isOverdue).toList();
-         break;
        case 'pending_not_overdue':
          filtered = filtered.where((payment) => 
            payment.status == PaymentStatus.pending && !payment.isOverdue
          ).toList();
          break;
        default:
-         // 'all' - no special filter
+         // 'all', 'overdue', 'down_payment' - handled by backend
          break;
      }
      
