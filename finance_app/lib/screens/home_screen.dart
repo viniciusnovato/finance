@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<Map<String, dynamic>>? _dashboardDataFuture;
   bool _isInitialized = false;
   String? _selectedClientId; // Para filtrar contratos por cliente
+  String? _selectedContractId; // Para filtrar pagamentos por contrato
   
   @override
   void initState() {
@@ -35,16 +36,24 @@ class _HomeScreenState extends State<HomeScreen> {
   
   void _setupNavigationCallback() {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
-    appProvider.onNavigationRequested = (int tabIndex, {String? clientId}) {
+    appProvider.onNavigationRequested = (int tabIndex, {String? clientId, String? contractId}) {
       setState(() {
         _selectedIndex = tabIndex;
         _selectedClientId = clientId;
+        _selectedContractId = contractId;
       });
       
       // Se navegando para contratos com cliente específico, carregar contratos filtrados
       if (tabIndex == 2 && clientId != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           appProvider.loadContracts(clientId: clientId);
+        });
+      }
+      
+      // Se navegando para pagamentos com filtros específicos, carregar pagamentos filtrados
+      if (tabIndex == 3 && (clientId != null || contractId != null)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appProvider.loadPayments(clientId: clientId, contractId: contractId);
         });
       }
     };
@@ -214,7 +223,11 @@ class _HomeScreenState extends State<HomeScreen> {
           clientName: _selectedClientId != null ? _getClientName(_selectedClientId!) : null,
         );
       case 3:
-        return const PaymentListWidget();
+        return PaymentListWidget(
+          clientId: _selectedClientId,
+          contractId: _selectedContractId,
+          clientName: _selectedClientId != null ? _getClientName(_selectedClientId!) : null,
+        );
       default:
         return _buildDashboard();
     }

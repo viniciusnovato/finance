@@ -6,7 +6,16 @@ import '../utils/app_colors.dart';
 import '../services/api_service.dart';
 
 class PaymentListWidget extends StatefulWidget {
-  const PaymentListWidget({super.key});
+  final String? clientId;
+  final String? contractId;
+  final String? clientName;
+  
+  const PaymentListWidget({
+    super.key,
+    this.clientId,
+    this.contractId,
+    this.clientName,
+  });
 
   @override
   State<PaymentListWidget> createState() => _PaymentListWidgetState();
@@ -36,6 +45,8 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
       print('🔧 [WIDGET] initState - carregando pagamentos iniciais');
       debugPrint('🔧 [WIDGET] initState - carregando pagamentos iniciais');
       context.read<AppProvider>().loadPayments(
+        clientId: widget.clientId,
+        contractId: widget.contractId,
         startDate: _dateRange?.start,
         endDate: _dateRange?.end,
       );
@@ -391,6 +402,8 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => provider.loadPayments(
+                clientId: widget.clientId,
+                contractId: widget.contractId,
                 startDate: _dateRange?.start,
                 endDate: _dateRange?.end,
               ),
@@ -806,6 +819,8 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
           status: statusFilter?.name,
           paymentType: paymentTypeFilter,
           overdueOnly: overdueFilter ?? false,
+          clientId: widget.clientId,
+          contractId: widget.contractId,
           startDate: _dateRange?.start,
           endDate: _dateRange?.end,
         );

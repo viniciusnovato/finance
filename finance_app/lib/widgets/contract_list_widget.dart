@@ -503,18 +503,13 @@ class _ContractListWidgetState extends State<ContractListWidget> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
-                  onPressed: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PaymentFormScreen(
-                          contractId: contract.id,
-                        ),
-                      ),
+                  onPressed: () {
+                    // Navegar para a aba de pagamentos com filtros
+                    final appProvider = context.read<AppProvider>();
+                    appProvider.requestNavigationToPayments(
+                      clientId: contract.clientId,
+                      contractId: contract.id,
                     );
-                    // Recarregar dados após retornar
-                    if (context.mounted) {
-                      await context.read<AppProvider>().loadPaymentsQuiet();
-                    }
                   },
                   icon: const Icon(Icons.payment, size: 16),
                   label: const Text('Pagamentos'),

@@ -25,7 +25,7 @@ class AppProvider with ChangeNotifier {
   bool _isAuthenticated = false;
   
   // Callback para navegação
-  Function(int, {String? clientId})? onNavigationRequested;
+  Function(int, {String? clientId, String? contractId})? onNavigationRequested;
   
   // Getters
   List<Client> get clients => _clients;
@@ -316,6 +316,7 @@ class AppProvider with ChangeNotifier {
   // Métodos para pagamentos
   Future<void> loadPayments({
     String? contractId,
+    String? clientId,
     PaymentStatus? status,
     bool? overdue,
     DateTime? startDate,
@@ -324,11 +325,12 @@ class AppProvider with ChangeNotifier {
     _setLoading(true);
     try {
       print('🔧 [PROVIDER] Chamando ApiService.getPayments...');
-      print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, status=${status?.name}, overdue=$overdue, startDate=$startDate, endDate=$endDate');
+      print('🔧 [PROVIDER] Parâmetros: contractId=$contractId, clientId=$clientId, status=${status?.name}, overdue=$overdue, startDate=$startDate, endDate=$endDate');
       _payments = await ApiService.getPaymentsList(
         search: null,
         limit: 200,
         contractId: contractId,
+        clientId: clientId,
         status: status?.name,
         overdueOnly: overdue ?? false,
         startDate: startDate,
@@ -580,6 +582,13 @@ class AppProvider with ChangeNotifier {
   void requestNavigationToContracts({String? clientId}) {
     if (onNavigationRequested != null) {
       onNavigationRequested!(2, clientId: clientId); // Índice 2 = aba de contratos
+    }
+  }
+  
+  // Método para solicitar navegação para pagamentos com filtro de cliente e contrato
+  void requestNavigationToPayments({String? clientId, String? contractId}) {
+    if (onNavigationRequested != null) {
+      onNavigationRequested!(3, clientId: clientId, contractId: contractId); // Índice 3 = aba de pagamentos
     }
   }
 }
