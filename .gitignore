@@ -278,3 +278,7 @@ importBD/contratosAtivosFinal.csv
 
 # Prompts directory - contains AI prompts and instructions
 prompts/
+
+#backend and frontend pid
+backend.pid
+frontend.pid
