@@ -24,6 +24,9 @@ class AppProvider with ChangeNotifier {
   User? _currentUser;
   bool _isAuthenticated = false;
   
+  // Callback para navegação
+  Function(int, {String? clientId})? onNavigationRequested;
+  
   // Getters
   List<Client> get clients => _clients;
   List<Contract> get contracts => _contracts;
@@ -244,7 +247,9 @@ class AppProvider with ChangeNotifier {
     _setLoading(true);
     try {
       print('🔧 [PROVIDER] Chamando ApiService.getContracts...');
+      print('🔧 [PROVIDER] Parâmetros: clientId=$clientId, search=$search');
       _contracts = await ApiService.getContracts(
+        clientId: clientId,
         search: search,
         limit: 50,
       );
@@ -569,5 +574,12 @@ class AppProvider with ChangeNotifier {
     return _payments
         .where((payment) => payment.status == PaymentStatus.paid)
         .fold(0.0, (sum, payment) => sum + payment.amount);
+  }
+  
+  // Método para solicitar navegação para contratos com filtro de cliente
+  void requestNavigationToContracts({String? clientId}) {
+    if (onNavigationRequested != null) {
+      onNavigationRequested!(2, clientId: clientId); // Índice 2 = aba de contratos
+    }
   }
 }

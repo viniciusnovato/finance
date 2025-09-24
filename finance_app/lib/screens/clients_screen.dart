@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../providers/contract_provider.dart';
 import '../models/client.dart';
 import 'client_form_screen.dart';
+import 'home_screen.dart';
 
 class ClientsScreen extends StatefulWidget {
   const ClientsScreen({super.key});
@@ -43,6 +45,20 @@ class _ClientsScreenState extends State<ClientsScreen> {
       _selectedStatus = null;
     });
     context.read<AppProvider>().loadClients();
+  }
+
+  void _navigateToClientContracts(Client client) {
+    // Solicitar navegação para contratos com filtro de cliente
+    final appProvider = context.read<AppProvider>();
+    appProvider.requestNavigationToContracts(clientId: client.id);
+    
+    // Mostrar feedback ao usuário
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Carregando contratos de ${client.firstName} ${client.lastName}...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -224,12 +240,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       return ClientCard(
                         client: client,
                         onTap: () {
-                          // TODO: Navegar para detalhes do cliente
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Cliente: ${client.firstName} ${client.lastName}'),
-                            ),
-                          );
+                          _navigateToClientContracts(client);
                         },
                       );
                     },

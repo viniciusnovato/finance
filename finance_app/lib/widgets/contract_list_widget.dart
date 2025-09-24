@@ -8,7 +8,14 @@ import '../screens/contract_form_screen.dart';
 import '../screens/payment_form_screen.dart';
 
 class ContractListWidget extends StatefulWidget {
-  const ContractListWidget({super.key});
+  final String? clientId;
+  final String? clientName;
+  
+  const ContractListWidget({
+    super.key,
+    this.clientId,
+    this.clientName,
+  });
 
   @override
   State<ContractListWidget> createState() => _ContractListWidgetState();
@@ -74,11 +81,63 @@ class _ContractListWidgetState extends State<ContractListWidget> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Contratos',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Contratos',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (widget.clientId != null && widget.clientName != null) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(context).primaryColor.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.filter_alt,
+                              size: 16,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Cliente: ${widget.clientName}',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: () {
+                                // Limpar filtro de cliente
+                                provider.loadContracts();
+                              },
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               ElevatedButton.icon(
@@ -487,6 +546,7 @@ class _ContractListWidgetState extends State<ContractListWidget> {
   void _performSearch(AppProvider provider) {
     provider.loadContracts(
       search: _searchController.text.trim().isEmpty ? null : _searchController.text.trim(),
+      clientId: widget.clientId, // Manter filtro de cliente se presente
     );
   }
 
