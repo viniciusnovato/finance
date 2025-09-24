@@ -33,6 +33,19 @@ class _ContractListWidgetState extends State<ContractListWidget> {
   }
   
   @override
+  void didUpdateWidget(ContractListWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Se o clientId mudou (incluindo quando fica null), recarregar contratos
+    if (oldWidget.clientId != widget.clientId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<AppProvider>().loadContracts(
+          clientId: widget.clientId,
+        );
+      });
+    }
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(builder: (context, provider, child) {
       return Column(
@@ -122,11 +135,13 @@ class _ContractListWidgetState extends State<ContractListWidget> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            GestureDetector(
+                            InkWell(
                               onTap: () {
-                                // Limpar filtro de cliente
-                                provider.loadContracts();
+                                // Navegar de volta para contratos sem filtro e limpar completamente os filtros
+                                final appProvider = context.read<AppProvider>();
+                                appProvider.onNavigationRequested?.call(2, clientId: null, contractId: null); // Navegar para contratos sem filtro
                               },
+                              borderRadius: BorderRadius.circular(12),
                               child: Icon(
                                 Icons.close,
                                 size: 16,

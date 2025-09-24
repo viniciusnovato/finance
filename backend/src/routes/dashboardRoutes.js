@@ -57,12 +57,12 @@ router.get('/stats', asyncHandler(async (req, res) => {
     const paidPayments = allPayments.filter(p => p.status === 'paid').length;
     const pendingPayments = allPayments.filter(p => p.status === 'pending').length;
     const cancelledPayments = allPayments.filter(p => p.status === 'cancelled').length;
-    const overduePayments = allPayments.filter(p => p.status === 'pending' && p.due_date < today).length;
+    const overduePayments = allPayments.filter(p => p.status === 'overdue' || (p.status === 'pending' && p.due_date < today)).length;
     
     const totalPaymentValue = allPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
     const paidValue = allPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
     const pendingValue = allPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-    const overdueValue = allPayments.filter(p => p.status === 'pending' && p.due_date < today).reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+    const overdueValue = allPayments.filter(p => p.status === 'overdue' || (p.status === 'pending' && p.due_date < today)).reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
     const revenueThisPeriod = allPayments.filter(p => p.status === 'paid' && p.paid_date >= startDateStr).reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
     const paymentsThisPeriod = allPayments.filter(p => p.status === 'paid' && p.paid_date >= startDateStr).length;
 
@@ -263,7 +263,6 @@ router.get('/overdue-payments', authenticateToken, asyncHandler(async (req, res)
     .from('payments')
     .select(`
       id,
-      installment_number,
       amount,
       due_date,
       status,
@@ -273,8 +272,7 @@ router.get('/overdue-payments', authenticateToken, asyncHandler(async (req, res)
         client:clients(id, first_name, last_name, tax_id, phone)
       )
     `)
-    .eq('status', 'pending')
-    .lt('due_date', new Date().toISOString().split('T')[0])
+    .or('status.eq.overdue,and(status.eq.pending,due_date.lt.' + new Date().toISOString().split('T')[0] + ')')
     .order('due_date', { ascending: true })
     .limit(parseInt(limit));
 

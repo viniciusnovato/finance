@@ -27,6 +27,9 @@ class AppProvider with ChangeNotifier {
   // Callback para navegação
   Function(int, {String? clientId, String? contractId})? onNavigationRequested;
   
+  // Estado do badge do cliente nos pagamentos
+  
+  
   // Getters
   List<Client> get clients => _clients;
   List<Contract> get contracts => _contracts;
@@ -271,6 +274,7 @@ class AppProvider with ChangeNotifier {
     print('🔧 [PROVIDER] Carregamento silencioso de contratos...');
     try {
       _contracts = await ApiService.getContracts(
+        clientId: clientId,
         search: search,
         limit: 50,
       );
@@ -356,6 +360,7 @@ class AppProvider with ChangeNotifier {
   // Versão silenciosa que não altera o estado de loading
   Future<void> loadPaymentsQuiet({
     String? contractId,
+    String? clientId,
     PaymentStatus? status,
     bool? overdue,
   }) async {
@@ -365,6 +370,7 @@ class AppProvider with ChangeNotifier {
         search: null,
         limit: 200,
         contractId: contractId,
+        clientId: clientId,
         status: status?.name,
         overdueOnly: overdue ?? false,
       );

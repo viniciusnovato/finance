@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/payment.dart';
+
 import '../utils/app_colors.dart';
 import '../services/api_service.dart';
 
@@ -25,6 +26,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
   PaymentStatus? _selectedStatus;
   String _selectedFilter = 'all'; // 'all', 'paid', 'unpaid', 'overdue', 'pending_not_overdue', 'down_payment'
   bool _showFilters = false;
+  // Removido _showClientBadge local - agora usa o AppProvider
   DateTimeRange? _dateRange;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -54,20 +56,38 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
   }
   
   @override
-  Widget build(BuildContext context) {
-    return Consumer<AppProvider>(builder: (context, provider, child) {
-      return Column(
-        children: [
-          _buildHeader(provider),
-          Expanded(
-            child: _buildPaymentList(provider),
-          ),
-        ],
-      );
-    });
+  void didUpdateWidget(PaymentListWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Se o clientId ou contractId mudou (incluindo quando ficam null), recarregar pagamentos
+    if (oldWidget.clientId != widget.clientId || oldWidget.contractId != widget.contractId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<AppProvider>().loadPayments(
+          clientId: widget.clientId,
+          contractId: widget.contractId,
+          startDate: _dateRange?.start,
+          endDate: _dateRange?.end,
+        );
+      });
+    }
   }
   
-  Widget _buildHeader(AppProvider provider) {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _buildHeader(),
+        Expanded(
+          child: Consumer<AppProvider>(
+            builder: (context, provider, child) {
+              return _buildPaymentList(provider);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.grey[50],
@@ -99,7 +119,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
               ElevatedButton.icon(
                 onPressed: () {
                   _clearFilters();
-                  provider.loadPayments(
+                  context.read<AppProvider>().loadPayments(
                     startDate: _dateRange?.start,
                     endDate: _dateRange?.end,
                   );
@@ -115,13 +135,75 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
           ),
           const SizedBox(height: 12),
           
+          // Badge do cliente filtrado
+          if (widget.clientId != null && widget.clientName != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.filter_alt,
+                    size: 16,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Cliente: ${widget.clientName}',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () {
+                      // Navegar de volta para pagamentos sem filtro e limpar completamente os filtros
+                      final appProvider = context.read<AppProvider>();
+                      appProvider.onNavigationRequested?.call(3, clientId: null, contractId: null); // Navegar para pagamentos sem filtro
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          
           // Filtros rápidos por status de pagamento
-          _buildQuickFilters(provider),
+          Consumer<AppProvider>(
+            builder: (context, provider, child) {
+              return _buildQuickFilters(provider);
+            },
+          ),
           
           // Filtros avançados (expansível)
           if (_showFilters) ...[
             const SizedBox(height: 16),
-            _buildAdvancedFilters(provider),
+            Consumer<AppProvider>(
+              builder: (context, provider, child) {
+                return _buildAdvancedFilters(provider);
+              },
+            ),
           ],
         ],
       ),
@@ -763,6 +845,7 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
       _currentPage = 1;
       _totalPages = 1;
       _totalItems = 0;
+      
     });
   }
   
@@ -864,20 +947,17 @@ class _PaymentListWidgetState extends State<PaymentListWidget> {
        filtered = filtered.where((payment) => payment.status == _selectedStatus).toList();
      }
      
-     // Filtro por busca de texto
+     // Filtro por busca de texto (busca parcial sempre)
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((p) {
-        // Se a query é um número, fazer busca exata no número do contrato
-        if (RegExp(r'^\d+$').hasMatch(query)) {
-          return p.contractNumber?.toLowerCase() == query;
-        }
-        // Caso contrário, fazer busca por conteúdo
+        // Sempre fazer busca parcial, nunca exata
         return (p.contractNumber?.toLowerCase().contains(query) ?? false) ||
                (p.clientName?.toLowerCase().contains(query) ?? false) ||
                p.contractId.toLowerCase().contains(query) ||
                p.installmentNumber.toString().contains(query) ||
-               p.id.toLowerCase().contains(query);
+               p.id.toLowerCase().contains(query) ||
+               (p.notes?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
      

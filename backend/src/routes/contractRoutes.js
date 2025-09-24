@@ -43,7 +43,7 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     const { data: matchingClients } = await supabaseAdmin
       .from('clients')
       .select('id')
-      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      .or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,tax_id.ilike.%${search}%,phone.ilike.%${search}%,mobile.ilike.%${search}%`);
     
     const clientIds = matchingClients?.map(c => c.id) || [];
     
@@ -51,9 +51,8 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     const searchConditions = [`contract_number.ilike.%${search}%`, `description.ilike.%${search}%`];
     
     if (clientIds.length > 0) {
-      // Se encontrou clientes, adicionar condição de client_id
-      const clientCondition = clientIds.map(id => `client_id.eq.${id}`).join(',');
-      searchConditions.push(clientCondition);
+      // Se encontrou clientes, adicionar condição de client_id usando OR corretamente
+      searchConditions.push(`client_id.in.(${clientIds.join(',')})`);
     }
     
     query = query.or(searchConditions.join(','));

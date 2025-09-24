@@ -99,13 +99,12 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
     
     const searchConditions = [];
     
-    // Busca exata por número do contrato
-    searchConditions.push(`contract_number.eq.${search}`);
+    // Busca por número do contrato (usando ilike para busca parcial)
+    searchConditions.push(`contract_number.ilike.%${search}%`);
     
     // Busca por clientes correspondentes
     if (clientIds.length > 0) {
-      const clientCondition = clientIds.map(id => `client_id.eq.${id}`).join(',');
-      searchConditions.push(clientCondition);
+      searchConditions.push(`client_id.in.(${clientIds.join(',')})`);
     }
     
     contractQuery = contractQuery.or(searchConditions.join(','));
