@@ -8,7 +8,7 @@ const XLSX = require('xlsx');
 const fs = require('fs');
 
 function testExcelRead() {
-    const excelFilePath = '/Users/insitutoareluna/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
+    const excelFilePath = '/Users/pedro/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
     
     console.log('=== Teste de Leitura da Planilha Excel ===');
     console.log(`Arquivo: ${excelFilePath}`);

@@ -4,7 +4,7 @@ const fs = require('fs');
 console.log('Iniciando teste...');
 
 try {
-    const filePath = '/Users/insitutoareluna/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
+    const filePath = '/Users/pedro/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
     console.log('Lendo arquivo:', filePath);
     
     const workbook = XLSX.readFile(filePath);
@@ -26,10 +26,10 @@ try {
         totalRows: data.length
     };
     
-    fs.writeFileSync('/Users/insitutoareluna/Documents/finance/backend/excel_test_result.json', JSON.stringify(result, null, 2));
+    fs.writeFileSync('/Users/pedro/Documents/finance/backend/excel_test_result.json', JSON.stringify(result, null, 2));
     console.log('Resultado salvo em excel_test_result.json');
     
 } catch (error) {
     console.error('Erro:', error.message);
-    fs.writeFileSync('/Users/insitutoareluna/Documents/finance/backend/excel_test_error.txt', error.stack);
+    fs.writeFileSync('/Users/pedro/Documents/finance/backend/excel_test_error.txt', error.stack);
 }

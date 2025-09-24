@@ -294,7 +294,7 @@ async function main() {
         console.log('2. Vá para seu projeto');
         console.log('3. Clique em "SQL Editor" no menu lateral');
         console.log('4. Cole e execute o conteúdo do arquivo:');
-        console.log('   /Users/insitutoareluna/Documents/finance/backend/src/scripts/create_supabase_tables.sql');
+        console.log('   /Users/pedro/Documents/finance/backend/src/scripts/create_supabase_tables.sql');
         console.log('');
         console.log('Após executar o SQL, rode novamente este script para verificar.');
         

@@ -16,7 +16,7 @@ const supabase = createClient(
   }
 );
 
-const CSV_DIR = '/Users/insitutoareluna/Documents/finance/importBD';
+const CSV_DIR = '/Users/pedro/Documents/finance/importBD';
 
 async function createClientMapping() {
   console.log('🔍 Criando mapeamento de clientes...');

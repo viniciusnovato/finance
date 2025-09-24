@@ -260,7 +260,7 @@ async function insertDataToSupabase(tableName, data) {
  * Função principal
  */
 async function main() {
-    const excelFilePath = '/Users/insitutoareluna/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
+    const excelFilePath = '/Users/pedro/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm';
     
     console.log('🚀 === Iniciando Importação de Dados da Planilha Excel ===');
     console.log(`📁 Arquivo: ${excelFilePath}`);
@@ -353,7 +353,7 @@ async function main() {
             importDate: new Date().toISOString()
         };
         
-        fs.writeFileSync('/Users/insitutoareluna/Documents/finance/backend/import_mappings.json', JSON.stringify(mappings, null, 2));
+        fs.writeFileSync('/Users/pedro/Documents/finance/backend/import_mappings.json', JSON.stringify(mappings, null, 2));
         console.log('💾 Mapeamentos salvos em import_mappings.json');
         
     } catch (error) {

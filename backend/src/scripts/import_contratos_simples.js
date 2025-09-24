@@ -54,7 +54,7 @@ function parseDate(dateStr) {
 
 // Função para importar CSV
 async function importCSV() {
-  const csvPath = '/Users/insitutoareluna/Documents/finance/importBD/contratosAtivosFinal - Contratos Ativos.csv';
+  const csvPath = '/Users/pedro/Documents/finance/importBD/contratosAtivosFinal - Contratos Ativos.csv';
   
   if (!fs.existsSync(csvPath)) {
     console.error(`❌ Arquivo CSV não encontrado: ${csvPath}`);

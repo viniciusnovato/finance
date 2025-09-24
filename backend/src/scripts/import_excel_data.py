@@ -200,7 +200,7 @@ def main():
     """
     Função principal
     """
-    excel_file_path = "/Users/insitutoareluna/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm"
+    excel_file_path = "/Users/pedro/Documents/finance/MACRO_PAGAMENTOS INSTITUTO ARELUNA - Editável (1).xlsm"
     
     if not os.path.exists(excel_file_path):
         print(f"Arquivo não encontrado: {excel_file_path}")
