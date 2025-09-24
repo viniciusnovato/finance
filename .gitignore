@@ -280,5 +280,5 @@ importBD/contratosAtivosFinal.csv
 prompts/
 
 #backend and frontend pid
-backend.pid
-frontend.pid
+.backend.pid
+.frontend.pid

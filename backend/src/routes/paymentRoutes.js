@@ -599,4 +599,60 @@ router.get('/reports/summary', authenticateToken, asyncHandler(async (req, res) 
   res.json({ summary });
 }));
 
+// Rota para atualizar pagamentos em atraso
+router.post('/update-overdue', authenticateToken, asyncHandler(async (req, res) => {
+  try {
+    // Busca pagamentos pendentes que estão vencidos
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { data: pendingOverdue, error: selectError } = await supabaseAdmin
+      .from('payments')
+      .select('id')
+      .eq('status', 'pending')
+      .lt('due_date', today);
+    
+    if (selectError) {
+      console.error('Erro ao buscar pagamentos pendentes vencidos:', selectError);
+      return res.status(500).json({ 
+        error: 'Erro ao buscar pagamentos pendentes vencidos', 
+        details: selectError.message 
+      });
+    }
+    
+    if (!pendingOverdue || pendingOverdue.length === 0) {
+      return res.json({ 
+        message: 'Nenhum pagamento pendente vencido encontrado',
+        updated_count: 0
+      });
+    }
+    
+    // Atualiza os pagamentos pendentes vencidos para status 'overdue'
+    const { data: updatedPayments, error: updateError } = await supabaseAdmin
+      .from('payments')
+      .update({ status: 'overdue' })
+      .eq('status', 'pending')
+      .lt('due_date', today)
+      .select('id');
+    
+    if (updateError) {
+      console.error('Erro ao atualizar pagamentos para overdue:', updateError);
+      return res.status(500).json({ 
+        error: 'Erro ao atualizar pagamentos para overdue', 
+        details: updateError.message 
+      });
+    }
+    
+    res.json({ 
+      message: 'Pagamentos em atraso atualizados com sucesso',
+      updated_count: updatedPayments ? updatedPayments.length : 0
+    });
+  } catch (error) {
+    console.error('Erro interno ao atualizar pagamentos:', error);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: error.message 
+    });
+  }
+}));
+
 module.exports = router;
