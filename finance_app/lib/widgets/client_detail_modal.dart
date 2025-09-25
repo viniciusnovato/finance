@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/client.dart';
-import '../screens/client_form_screen_enhanced.dart';
+import '../screens/client_form_screen.dart';
 
 class ClientDetailModal extends StatelessWidget {
   final Client client;
@@ -63,11 +63,11 @@ class ClientDetailModal extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
-                            color: _getAttentionLevelColor(client.attentionLevel),
+                            color: Colors.grey,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            client.attentionLevel.displayName,
+                            "Status",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -130,14 +130,14 @@ class ClientDetailModal extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    // Endereço
+                    // Morada
                     if (_hasAddressInfo()) ...[
                       _buildSection(
-                        title: 'Endereço',
+                        title: 'Morada',
                         icon: Icons.location_on,
                         children: [
                           if (client.address?.isNotEmpty == true)
-                            _buildInfoRow('Endereço', client.address!),
+                            _buildInfoRow('Morada', client.address!),
                           if (client.city?.isNotEmpty == true)
                             _buildInfoRow('Cidade', client.city!),
                           if (client.postalCode?.isNotEmpty == true)
@@ -201,7 +201,7 @@ class ClientDetailModal extends StatelessWidget {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => ClientFormScreenEnhanced(client: client),
+                            builder: (context) => ClientFormScreen(client: client),
                           ),
                         );
                       },
@@ -262,7 +262,7 @@ class ClientDetailModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: _getAttentionLevelColor(client.attentionLevel),
+              color: Colors.grey,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -278,8 +278,8 @@ class ClientDetailModal extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  client.attentionLevel.displayName,
-                  style: const TextStyle(
+                  "Status",
+                            style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -364,17 +364,6 @@ class ClientDetailModal extends StatelessWidget {
            client.postalCode?.isNotEmpty == true;
   }
 
-  Color _getAttentionLevelColor(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return Colors.green;
-      case AttentionLevel.risk:
-        return Colors.orange;
-      case AttentionLevel.lightDelay:
-        return Colors.amber;
-      case AttentionLevel.severeDelay:
-        return Colors.red;
-    }
   }
 
   String _formatTaxId(String taxId) {

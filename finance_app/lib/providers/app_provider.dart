@@ -28,8 +28,7 @@ class AppProvider with ChangeNotifier {
   Function(int, {String? clientId, String? contractId})? onNavigationRequested;
   
   // Estado do badge do cliente nos pagamentos
-  
-  
+
   // Getters
   List<Client> get clients => _clients;
   List<Contract> get contracts => _contracts;
@@ -157,8 +156,7 @@ class AppProvider with ChangeNotifier {
   // Métodos para clientes
   Future<void> loadClients({
     String? search,
-    AttentionLevel? attentionLevel,
-  }) async {
+    }) async {
     print('🔧 [PROVIDER] Iniciando carregamento de clientes via API...');
     _setLoading(true);
     try {
@@ -181,8 +179,7 @@ class AppProvider with ChangeNotifier {
   // Versão silenciosa que não altera o estado de loading
   Future<void> loadClientsQuiet({
     String? search,
-    AttentionLevel? attentionLevel,
-  }) async {
+    }) async {
     print('🔧 [PROVIDER] Carregamento silencioso de clientes...');
     try {
       _clients = await ApiService.getClients(
@@ -533,8 +530,9 @@ class AppProvider with ChangeNotifier {
   }
   
   // Filtros e buscas locais
-  List<Client> getClientsByAttention(AttentionLevel level) {
-    return _clients.where((client) => client.attentionLevel == level).toList();
+  List<Client> getClientsByAttention(String? level) {
+    if (level == null) return _clients;
+    return _clients.where((client) => client.isActive).toList();
   }
   
   List<Contract> getActiveContracts() {

@@ -144,8 +144,7 @@ class DashboardProvider with ChangeNotifier {
         p.dueDate.isBefore(DateTime.now()) && p.status == PaymentStatus.pending
       ).toList();
       final clientsNeedingAttention = clients.where((c) => 
-        c.attentionLevel == AttentionLevel.risk || c.attentionLevel == AttentionLevel.severeDelay
-      ).toList();
+        c.== || c.== ).toList();
       
       final totalReceivable = payments
           .where((p) => p.status == PaymentStatus.pending)

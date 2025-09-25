@@ -28,7 +28,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   
   DateTime? _birthDate;
   String _country = 'Portugal';
-  AttentionLevel _attentionLevel = AttentionLevel.normal;
   bool _isActive = true;
   bool _isLoading = false;
 
@@ -54,7 +53,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     _notesController.text = client.notes ?? '';
     _birthDate = client.birthDate;
     _country = client.country;
-    _attentionLevel = client.attentionLevel;
     _isActive = client.isActive;
   }
 
@@ -111,7 +109,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         city: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
         postalCode: _postalCodeController.text.trim().isEmpty ? null : _postalCodeController.text.trim(),
         country: _country,
-        attentionLevel: _attentionLevel,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
         isActive: _isActive,
         createdAt: widget.client?.createdAt ?? now,
@@ -321,7 +318,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Endereço
+            // Morada
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -329,7 +326,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Endereço',
+                      'Morada',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -338,7 +335,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                     TextFormField(
                       controller: _addressController,
                       decoration: const InputDecoration(
-                        labelText: 'Endereço',
+                        labelText: 'Morada',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.home),
                       ),
@@ -362,7 +359,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                           child: TextFormField(
                             controller: _postalCodeController,
                             decoration: const InputDecoration(
-                              labelText: 'Código Postal',
+                              labelText: 'CEP',
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.mail),
                             ),
@@ -411,25 +408,8 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<AttentionLevel>(
-                      value: _attentionLevel,
-                      decoration: const InputDecoration(
-                        labelText: 'Nível de Atenção',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.priority_high),
-                      ),
-                      items: AttentionLevel.values.map((level) {
-                        return DropdownMenuItem(
-                          value: level,
-                          child: Text(level.displayName),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _attentionLevel = value!;
-                        });
-                      },
-                    ),
+                    // Campo de nível de atenção removido temporariamente
+                    // TODO: Reimplementar após definir enum AttentionLevel
                     const SizedBox(height: 16),
                     SwitchListTile(
                       title: const Text('Cliente Ativo'),

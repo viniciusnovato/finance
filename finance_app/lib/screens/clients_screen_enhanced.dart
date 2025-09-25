@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/client.dart';
-import '../screens/client_form_screen_enhanced.dart';
+import '../screens/client_form_screen.dart';
 import '../widgets/client_detail_modal.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import '../widgets/advanced_search_modal.dart';
@@ -18,9 +18,7 @@ class ClientsScreenEnhanced extends StatefulWidget {
 
 class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
   final TextEditingController _searchController = TextEditingController();
-  AttentionLevel? _selectedAttentionLevel;
-  String _sortBy = 'name'; // name, created_at, attention_level
-  bool _sortAscending = true;
+  _selectedString _sortBy = 'name'; // name, created_at, bool _sortAscending = true;
   bool _showFilters = false;
   int _currentPage = 1;
   final int _itemsPerPage = 20;
@@ -48,14 +46,13 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
     final query = _searchController.text.trim();
     context.read<AppProvider>().loadClients(
       search: query.isEmpty ? null : query,
-      attentionLevel: _selectedAttentionLevel,
-    );
+      _selected);
   }
 
   void _clearFilters() {
     setState(() {
       _searchController.clear();
-      _selectedAttentionLevel = null;
+      _selected= null;
       _sortBy = 'name';
       _sortAscending = true;
       _currentPage = 1;
@@ -84,10 +81,8 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
           (client.phone?.contains(searchQuery) ?? false) ||
           (client.taxId?.contains(searchQuery) ?? false);
 
-      final matchesAttention = _selectedAttentionLevel == null ||
-          client.attentionLevel == _selectedAttentionLevel;
-
-      // Busca avançada
+      final matchesAttention = _selected== null ||
+          // Busca avançada removida temporariamente
       final matchesAdvanced = _advancedSearchCriteria == null ||
           _advancedSearchCriteria!.matches(client);
 
@@ -104,8 +99,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
         case 'created_at':
           comparison = a.createdAt.compareTo(b.createdAt);
           break;
-        case 'attention_level':
-          comparison = a.attentionLevel.index.compareTo(b.attentionLevel.index);
+        case 'comparison = a.);
           break;
       }
       return _sortAscending ? comparison : -comparison;
@@ -342,20 +336,17 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                   children: [
                     const Text('Nível de Atenção'),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<AttentionLevel?>(
-                      value: _selectedAttentionLevel,
-                      decoration: InputDecoration(
+                    DropdownButtonFormField<value: _selecteddecoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       items: [
-                        const DropdownMenuItem<AttentionLevel?>(
-                          value: null,
+                        const DropdownMenuItem<value: null,
                           child: Text('Todos os níveis'),
                         ),
-                        ...AttentionLevel.values.map((level) => DropdownMenuItem(
+                        ...) => DropdownMenuItem(
                           value: level,
                           child: Row(
                             children: [
@@ -363,7 +354,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                                 width: 12,
                                 height: 12,
                                 decoration: BoxDecoration(
-                                  color: _getAttentionLevelColor(level),
+                                  color: Colors.grey,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -375,7 +366,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          _selectedAttentionLevel = value;
+                          _selected= value;
                         });
                         _performSearch();
                       },
@@ -401,7 +392,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                       items: const [
                         DropdownMenuItem(value: 'name', child: Text('Nome')),
                         DropdownMenuItem(value: 'created_at', child: Text('Data de Criação')),
-                        DropdownMenuItem(value: 'attention_level', child: Text('Nível de Atenção')),
+                        // Dropdown de nível de atenção removido
                       ],
                       onChanged: (value) {
                         if (value != null) {
@@ -439,7 +430,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                   children: [
                     Text(
                       _sortBy == 'name' ? 'Nome' :
-                      _sortBy == 'created_at' ? 'Data' : 'Nível',
+                      _sortBy == 'created_at' ? 'Data' : 'Nome',
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.w500,
@@ -497,7 +488,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                     const SizedBox(width: 8),
                   ],
                   CircleAvatar(
-                    backgroundColor: _getAttentionLevelColor(client.attentionLevel),
+                    backgroundColor: Colors.grey,
                     radius: 24,
                     child: Text(
                       client.fullName.isNotEmpty 
@@ -526,18 +517,17 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _getAttentionLevelColor(client.attentionLevel).withOpacity(0.1),
+                            color: _get).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: _getAttentionLevelColor(client.attentionLevel).withOpacity(0.3),
+                              color: _get).withOpacity(0.3),
                             ),
                           ),
                           child: Text(
-                            client.attentionLevel.displayName,
-                            style: TextStyle(
+                            client.style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: _getAttentionLevelColor(client.attentionLevel),
+                              color: Colors.grey,
                             ),
                           ),
                         ),
@@ -949,24 +939,13 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
     // TODO: Implementar importação real
   }
 
-  Color _getAttentionLevelColor(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return Colors.green;
-      case AttentionLevel.risk:
-        return Colors.orange;
-      case AttentionLevel.lightDelay:
-        return Colors.amber;
-      case AttentionLevel.severeDelay:
-        return Colors.red;
-    }
   }
 
   void _navigateToClientForm({Client? client}) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClientFormScreenEnhanced(client: client),
+        builder: (context) => ClientFormScreen(client: client),
       ),
     );
 
@@ -1000,7 +979,7 @@ class _ClientsScreenEnhancedState extends State<ClientsScreenEnhanced> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClientFormScreenEnhanced(client: client),
+        builder: (context) => ClientFormScreen(client: client),
       ),
     );
 

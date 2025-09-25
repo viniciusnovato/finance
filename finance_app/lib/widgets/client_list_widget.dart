@@ -15,7 +15,6 @@ class ClientListWidget extends StatefulWidget {
 
 class _ClientListWidgetState extends State<ClientListWidget> {
   final TextEditingController _searchController = TextEditingController();
-  AttentionLevel? _selectedAttentionLevel;
   Timer? _debounceTimer;
   
   @override
@@ -27,100 +26,37 @@ class _ClientListWidgetState extends State<ClientListWidget> {
   
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(builder: (context, provider, child) {
-      return Column(
-        children: [
-          _buildSearchAndFilter(provider),
-          Expanded(
-            child: _buildClientList(provider),
-          ),
-        ],
-      );
-    });
+    return Consumer<AppProvider>(
+      builder: (context, provider, child) {
+        return Column(
+          children: [
+            _buildSearchBar(provider),
+            Expanded(
+              child: _buildClientList(provider),
+            ),
+          ],
+        );
+      },
+    );
   }
   
-  Widget _buildSearchAndFilter(AppProvider provider) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
+  Widget _buildSearchBar(AppProvider provider) {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: colorScheme.surfaceVariant.withOpacity(0.3),
-      child: Column(
-        children: [
-          SearchBar(
-            controller: _searchController,
-            hintText: 'Buscar por nome ou email...',
-            leading: const Icon(Icons.search),
-            trailing: _searchController.text.isNotEmpty
-                ? [IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      _performSearch(provider);
-                    },
-                  )]
-                : null,
-            onChanged: (value) {
-              setState(() {});
-              _debounceTimer?.cancel();
-              _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-                _performSearch(provider);
-              });
-            },
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<AttentionLevel?>(
-                  value: _selectedAttentionLevel,
-                  decoration: InputDecoration(
-                    labelText: 'Nível de Atenção',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  items: [
-                    const DropdownMenuItem<AttentionLevel?>(
-                      value: null,
-                      child: Text('Todos'),
-                    ),
-                    ...AttentionLevel.values.map(
-                      (level) => DropdownMenuItem<AttentionLevel?>(
-                        value: level,
-                        child: Text(level.displayName),
-                      ),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedAttentionLevel = value;
-                    });
-                    _debounceTimer?.cancel();
-                    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-                      _performSearch(provider);
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              FilledButton.icon(
-                onPressed: () {
-                  // TODO: Implementar adição de novo cliente
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Funcionalidade em desenvolvimento'),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Novo'),
-              ),
-            ],
-          ),
-        ],
+      child: TextField(
+        controller: _searchController,
+        decoration: const InputDecoration(
+          labelText: 'Buscar clientes',
+          hintText: 'Nome, email ou documento',
+          prefixIcon: Icon(Icons.search),
+          border: OutlineInputBorder(),
+        ),
+        onChanged: (value) {
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+            _performSearch(provider);
+          });
+        },
       ),
     );
   }
@@ -192,10 +128,9 @@ class _ClientListWidgetState extends State<ClientListWidget> {
     
     return RefreshIndicator(
       onRefresh: () => provider.loadClients(),
-      child: ListView.separated(
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: clients.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final client = clients[index];
           return _buildClientCard(client);
@@ -206,115 +141,9 @@ class _ClientListWidgetState extends State<ClientListWidget> {
   
   Widget _buildClientCard(Client client) {
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: _getAttentionLevelColor(client.attentionLevel),
-          child: Text(
-            (client.firstName.isNotEmpty ? client.firstName[0] : '?').toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(
-          '${client.firstName} ${client.lastName}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            if (client.email?.isNotEmpty == true)
-              Row(
-                children: [
-                  const Icon(Icons.email, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      client.email!,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            if (client.phone?.isNotEmpty == true)
-              Row(
-                children: [
-                  const Icon(Icons.phone, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    client.phone!,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _getAttentionLevelColor(client.attentionLevel).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                client.attentionLevel.displayName,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: _getAttentionLevelColor(client.attentionLevel),
-                ),
-              ),
-            ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'edit':
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ClientFormScreen(client: client),
-                  ),
-                ).then((_) {
-                  // Recarregar lista após voltar do formulário
-                  Provider.of<AppProvider>(context, listen: false).loadClients();
-                });
-                break;
-              case 'delete':
-                _showDeleteConfirmation(client);
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit, size: 16),
-                  SizedBox(width: 8),
-                  Text('Editar'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, size: 16, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Excluir', style: TextStyle(color: Colors.red)),
-                ],
-              ),
-            ),
-          ],
-        ),
+      child: InkWell(
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -325,27 +154,86 @@ class _ClientListWidgetState extends State<ClientListWidget> {
             Provider.of<AppProvider>(context, listen: false).loadClients();
           });
         },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    radius: 24,
+                    child: Text(
+                      client.fullName.isNotEmpty 
+                          ? client.fullName[0].toUpperCase() 
+                          : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          client.fullName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        if (client.email?.isNotEmpty == true) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            client.email!,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                        if (client.phone?.isNotEmpty == true) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            client.phone!,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ClientFormScreen(client: client),
+                        ),
+                      ).then((_) {
+                        Provider.of<AppProvider>(context, listen: false).loadClients();
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
-  }
-  
-  Color _getAttentionLevelColor(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return Colors.green;
-      case AttentionLevel.risk:
-        return Colors.orange;
-      case AttentionLevel.lightDelay:
-        return Colors.orange;
-      case AttentionLevel.severeDelay:
-        return Colors.red;
-    }
   }
   
   void _performSearch(AppProvider provider) {
     provider.loadClients(
       search: _searchController.text.trim().isEmpty ? null : _searchController.text.trim(),
-      attentionLevel: _selectedAttentionLevel,
     );
   }
   
@@ -366,16 +254,23 @@ class _ClientListWidgetState extends State<ClientListWidget> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Provider.of<AppProvider>(context, listen: false)
-                  .deleteClient(client.id!);
+              _deleteClient(client);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
             ),
             child: const Text('Excluir'),
           ),
         ],
+      ),
+    );
+  }
+  
+  void _deleteClient(Client client) {
+    // TODO: Implementar exclusão de cliente
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Funcionalidade de exclusão em desenvolvimento'),
       ),
     );
   }

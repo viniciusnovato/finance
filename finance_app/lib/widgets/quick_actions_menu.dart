@@ -217,11 +217,7 @@ class QuickActionsMenu extends StatelessWidget {
   void _showStatistics(BuildContext context) {
     final activeClients = selectedClients.where((c) => c.isActive).length;
     final inactiveClients = selectedClients.length - activeClients;
-    
-    final attentionLevels = <AttentionLevel, int>{};
-    for (final level in AttentionLevel.values) {
-      attentionLevels[level] = selectedClients.where((c) => c.attentionLevel == level).length;
-    }
+    // Código de níveis de atenção removido
 
     showDialog(
       context: context,
@@ -252,15 +248,6 @@ class QuickActionsMenu extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 12),
-              ...attentionLevels.entries.map((entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _buildStatItem(
-                  entry.key.displayName,
-                  entry.value.toString(),
-                  Icons.flag,
-                  _getAttentionLevelColor(entry.key),
-                ),
-              )),
             ],
           ),
         ),
@@ -300,18 +287,7 @@ class QuickActionsMenu extends StatelessWidget {
     );
   }
 
-  Color _getAttentionLevelColor(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return Colors.green;
-      case AttentionLevel.risk:
-        return Colors.orange;
-      case AttentionLevel.lightDelay:
-        return Colors.red;
-      case AttentionLevel.severeDelay:
-        return Colors.red[800]!;
-    }
-  }
+
 
   void _showBackupDialog(BuildContext context) {
     showDialog(

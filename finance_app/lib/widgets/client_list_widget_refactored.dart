@@ -18,8 +18,6 @@ class ClientListWidgetRefactored extends StatefulWidget {
 
 class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored> {
   final TextEditingController _searchController = TextEditingController();
-  AttentionLevel? _selectedAttentionLevel;
-  
   @override
   void initState() {
     super.initState();
@@ -40,8 +38,7 @@ class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored>
     final appProvider = context.read<AppProviderRefactored>();
     await appProvider.clients.loadClients(
       search: _searchController.text.isEmpty ? null : _searchController.text,
-      attentionLevel: _selectedAttentionLevel,
-    );
+      );
   }
   
   void _onSearchChanged() {
@@ -108,25 +105,23 @@ class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored>
                 const Text('Nível de Atenção: '),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: DropdownButtonFormField<AttentionLevel?>(
-                    value: _selectedAttentionLevel,
-                    decoration: const InputDecoration(
+                  child: DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
-                      const DropdownMenuItem<AttentionLevel?>(
-                        value: null,
+                      const DropdownMenuItem<value: null,
                         child: Text('Todos'),
                       ),
-                      ...AttentionLevel.values.map((level) => DropdownMenuItem(
+                      ...) => DropdownMenuItem(
                         value: level,
-                        child: Text(_getAttentionLevelText(level)),
+                        child: Text(_get)),
                       )),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        _selectedAttentionLevel = value;
+                        
                       });
                       _refreshClients();
                     },
@@ -229,7 +224,7 @@ class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _getAttentionLevelColor(client.attentionLevel),
+          backgroundColor: _get),
           child: Text(
             client.fullName.isNotEmpty ? client.fullName[0].toUpperCase() : '?',
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -245,9 +240,9 @@ class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored>
             if (client.email?.isNotEmpty == true) Text(client.email!),
             if (client.phone?.isNotEmpty == true) Text(client.phone!),
             Text(
-              'Nível: ${_getAttentionLevelText(client.attentionLevel)}',
+              'Nível: ${_get)}',
               style: TextStyle(
-                color: _getAttentionLevelColor(client.attentionLevel),
+                color: _get),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -270,31 +265,9 @@ class _ClientListWidgetRefactoredState extends State<ClientListWidgetRefactored>
       ),
     );
   }
-  
-  String _getAttentionLevelText(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return 'Normal';
-      case AttentionLevel.risk:
-        return 'Risco';
-      case AttentionLevel.lightDelay:
-        return 'Atraso Leve';
-      case AttentionLevel.severeDelay:
-        return 'Atraso Severo';
-    }
+
   }
-  
-  Color _getAttentionLevelColor(AttentionLevel level) {
-    switch (level) {
-      case AttentionLevel.normal:
-        return Colors.green;
-      case AttentionLevel.risk:
-        return Colors.orange;
-      case AttentionLevel.lightDelay:
-        return Colors.amber;
-      case AttentionLevel.severeDelay:
-        return Colors.red;
-    }
+
   }
   
   void _navigateToClientForm({Client? client}) {

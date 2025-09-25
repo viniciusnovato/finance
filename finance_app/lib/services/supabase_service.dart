@@ -12,43 +12,28 @@ class SupabaseService {
   // =====================================================
 
   static Future<List<Client>> getClients({
-    int? limit,
-    int? offset,
-    String? searchTerm,
-    AttentionLevel? attentionLevel,
+    String? search,
+    String? status,
   }) async {
     try {
-      print('🔧 [SUPABASE] Iniciando consulta de clientes...');
-      dynamic query = _client.from('clients').select();
+      var query = _client.from('clients').select();
       
-      if (searchTerm != null && searchTerm.isNotEmpty) {
-        query = query.or(
-          'first_name.ilike.%$searchTerm%,last_name.ilike.%$searchTerm%,email.ilike.%$searchTerm%'
-        );
+      if (search != null && search.isNotEmpty) {
+        query = query.or('first_name.ilike.%$search%,last_name.ilike.%$search%,email.ilike.%$search%');
       }
       
-      if (attentionLevel != null) {
-        query = query.eq('attention_level', attentionLevel.name);
+      if (status != null && status.isNotEmpty) {
+        query = query.eq('status', status);
       }
       
-      if (limit != null) {
-        query = query.limit(limit);
-      }
-      
-      if (offset != null) {
-        query = query.range(offset, offset + (limit ?? 10) - 1);
-      }
-      
-      print('🔧 [SUPABASE] Executando query...');
       final response = await query.order('created_at', ascending: false);
-      print('🔧 [SUPABASE] Resposta recebida: ${response.length} registros');
       
       return (response as List)
           .map((json) => Client.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ [SUPABASE] Erro na consulta: $e');
-      throw Exception('Erro ao buscar clientes: $e');
+      print('Erro ao buscar clientes: $e');
+      return [];
     }
   }
 

@@ -12,7 +12,6 @@ class Client {
   final String? state;
   final String? postalCode;
   final String country;
-  final AttentionLevel attentionLevel;
   final String? notes;
   final String? status;
   final bool isActive;
@@ -33,7 +32,6 @@ class Client {
     this.state,
     this.postalCode,
     this.country = 'Portugal',
-    this.attentionLevel = AttentionLevel.normal,
     this.notes,
     this.status,
     this.isActive = true,
@@ -82,10 +80,6 @@ class Client {
       state: json['state']?.toString(),
       postalCode: json['postal_code']?.toString(),
       country: json['country']?.toString() ?? 'Portugal',
-      attentionLevel: AttentionLevel.values.firstWhere(
-        (e) => e.name == json['attention_level'],
-        orElse: () => AttentionLevel.normal,
-      ),
       notes: json['notes']?.toString(),
       status: json['status']?.toString(),
       isActive: json['is_active'] ?? true,
@@ -109,7 +103,6 @@ class Client {
       'state': state,
       'postal_code': postalCode,
       'country': country,
-      'attention_level': attentionLevel.name,
       'notes': notes,
       'status': status,
       'is_active': isActive,
@@ -132,7 +125,6 @@ class Client {
     String? state,
     String? postalCode,
     String? country,
-    AttentionLevel? attentionLevel,
     String? notes,
     String? status,
     bool? isActive,
@@ -153,45 +145,11 @@ class Client {
       state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
-      attentionLevel: attentionLevel ?? this.attentionLevel,
       notes: notes ?? this.notes,
       status: status ?? this.status,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
-  }
-}
-
-enum AttentionLevel {
-  normal,
-  risk,
-  lightDelay,
-  severeDelay;
-
-  String get displayName {
-    switch (this) {
-      case AttentionLevel.normal:
-        return 'Normal';
-      case AttentionLevel.risk:
-        return 'Risco';
-      case AttentionLevel.lightDelay:
-        return 'Atraso Leve';
-      case AttentionLevel.severeDelay:
-        return 'Atraso Grave';
-    }
-  }
-
-  String get name {
-    switch (this) {
-      case AttentionLevel.normal:
-        return 'normal';
-      case AttentionLevel.risk:
-        return 'risk';
-      case AttentionLevel.lightDelay:
-        return 'light_delay';
-      case AttentionLevel.severeDelay:
-        return 'severe_delay';
-    }
   }
 }

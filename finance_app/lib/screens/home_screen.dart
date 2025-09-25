@@ -10,7 +10,7 @@ import '../widgets/erp_layout.dart';
 import '../utils/app_colors.dart';
 import '../services/api_service.dart';
 import '../models/payment.dart';
-import 'clients_screen_enhanced.dart';
+import 'clients_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -228,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return _buildDashboard();
       case 1:
-        return const ClientsScreenEnhanced();
+        return const ClientsScreen();
       case 2:
         return ContractListWidget(
           clientId: _selectedClientId,

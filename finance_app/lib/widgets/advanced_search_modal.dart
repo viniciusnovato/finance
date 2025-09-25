@@ -27,7 +27,6 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
   final _countryController = TextEditingController();
   
   // Filters
-  AttentionLevel? _selectedAttentionLevel;
   bool? _isActive;
   DateTimeRange? _createdDateRange;
   DateTimeRange? _birthDateRange;
@@ -47,7 +46,6 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
       _taxIdController.text = criteria.taxId ?? '';
       _cityController.text = criteria.city ?? '';
       _countryController.text = criteria.country ?? '';
-      _selectedAttentionLevel = criteria.attentionLevel;
       _isActive = criteria.isActive;
       _createdDateRange = criteria.createdDateRange;
       _birthDateRange = criteria.birthDateRange;
@@ -212,20 +210,6 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
                       
                       Row(
                         children: [
-                          Expanded(
-                            child: _buildDropdownField<AttentionLevel>(
-                              label: 'Nível de Atenção',
-                              value: _selectedAttentionLevel,
-                              items: AttentionLevel.values.map((level) => 
-                                DropdownMenuItem(
-                                  value: level,
-                                  child: Text(level.displayName),
-                                ),
-                              ).toList(),
-                              onChanged: (value) => setState(() => _selectedAttentionLevel = value),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
                           Expanded(
                             child: _buildDropdownField<bool>(
                               label: 'Status',
@@ -447,7 +431,7 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
       _taxIdController.clear();
       _cityController.clear();
       _countryController.clear();
-      _selectedAttentionLevel = null;
+      
       _isActive = null;
       _createdDateRange = null;
       _birthDateRange = null;
@@ -462,7 +446,6 @@ class _AdvancedSearchModalState extends State<AdvancedSearchModal> {
       taxId: _taxIdController.text.trim().isEmpty ? null : _taxIdController.text.trim(),
       city: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
       country: _countryController.text.trim().isEmpty ? null : _countryController.text.trim(),
-      attentionLevel: _selectedAttentionLevel,
       isActive: _isActive,
       createdDateRange: _createdDateRange,
       birthDateRange: _birthDateRange,
@@ -484,7 +467,6 @@ class AdvancedSearchCriteria {
   final String? taxId;
   final String? city;
   final String? country;
-  final AttentionLevel? attentionLevel;
   final bool? isActive;
   final DateTimeRange? createdDateRange;
   final DateTimeRange? birthDateRange;
@@ -496,7 +478,6 @@ class AdvancedSearchCriteria {
     this.taxId,
     this.city,
     this.country,
-    this.attentionLevel,
     this.isActive,
     this.createdDateRange,
     this.birthDateRange,
@@ -509,7 +490,6 @@ class AdvancedSearchCriteria {
            taxId == null &&
            city == null &&
            country == null &&
-           attentionLevel == null &&
            isActive == null &&
            createdDateRange == null &&
            birthDateRange == null;
@@ -548,10 +528,7 @@ class AdvancedSearchCriteria {
       return false;
     }
 
-    // Nível de atenção
-    if (attentionLevel != null && client.attentionLevel != attentionLevel) {
-      return false;
-    }
+    // Nível de atenção removido
 
     // Status ativo
     if (isActive != null && client.isActive != isActive) {

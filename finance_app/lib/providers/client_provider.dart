@@ -19,8 +19,7 @@ class ClientProvider with ChangeNotifier {
   // Métodos para clientes
   Future<void> loadClients({
     String? search,
-    AttentionLevel? attentionLevel,
-  }) async {
+    }) async {
     print('🔧 [CLIENT_PROVIDER] Iniciando carregamento de clientes via API...');
     _setLoading(true);
     try {
@@ -43,8 +42,7 @@ class ClientProvider with ChangeNotifier {
   // Versão silenciosa que não altera o estado de loading
   Future<void> loadClientsQuiet({
     String? search,
-    AttentionLevel? attentionLevel,
-  }) async {
+    }) async {
     print('🔧 [CLIENT_PROVIDER] Carregamento silencioso de clientes...');
     try {
       _clients = await ApiService.getClients(
@@ -105,8 +103,8 @@ class ClientProvider with ChangeNotifier {
   }
   
   // Filtros e buscas locais
-  List<Client> getClientsByAttention(AttentionLevel level) {
-    return _clients.where((client) => client.attentionLevel == level).toList();
+  List<Client> getClientsByAttention(level) {
+    return _clients.where((client) => client.== level).toList();
   }
   
   Client? getClientById(String id) {
