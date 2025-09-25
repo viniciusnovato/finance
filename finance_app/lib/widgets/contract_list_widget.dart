@@ -26,6 +26,17 @@ class _ContractListWidgetState extends State<ContractListWidget> {
   Timer? _debounceTimer;
   
   @override
+  void initState() {
+    super.initState();
+    // Carregar contratos quando o widget é inicializado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppProvider>().loadContracts(
+        clientId: widget.clientId,
+      );
+    });
+  }
+  
+  @override
   void dispose() {
     _searchController.dispose();
     _debounceTimer?.cancel();

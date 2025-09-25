@@ -86,7 +86,7 @@ class DashboardProvider with ChangeNotifier {
   Future<void> _fetchDashboardDataFromApi() async {
     print('🔧 [DASHBOARD_PROVIDER] Buscando dados via API backend...');
     
-    const String baseUrl = 'http://127.0.0.1:3001/api';
+    const String baseUrl = 'http://127.0.0.1:3000/api';
     final headers = {'Content-Type': 'application/json'};
     
     try {

@@ -7,7 +7,7 @@ import '../models/contract.dart';
 import '../models/payment.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3001/api';
+  static const String baseUrl = 'http://localhost:3000/api';
   
   // Headers padrão (sem autenticação para desenvolvimento)
   static Future<Map<String, String>> _getHeaders() async {

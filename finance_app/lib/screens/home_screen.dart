@@ -10,7 +10,7 @@ import '../widgets/erp_layout.dart';
 import '../utils/app_colors.dart';
 import '../services/api_service.dart';
 import '../models/payment.dart';
-import 'clients_screen.dart';
+import 'clients_screen_enhanced.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,24 +39,32 @@ class _HomeScreenState extends State<HomeScreen> {
     appProvider.onNavigationRequested = (int tabIndex, {String? clientId, String? contractId}) {
       setState(() {
         _selectedIndex = tabIndex;
-        // Limpar filtros se não foram fornecidos parâmetros
+        // Atualizar os filtros locais com os valores recebidos (incluindo null para limpar)
         _selectedClientId = clientId;
         _selectedContractId = contractId;
       });
       
-      // Se navegando para contratos
-      if (tabIndex == 2) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Sempre recarregar dados quando os filtros mudarem, independente da aba
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Se navegando para contratos ou se os filtros mudaram
+        if (tabIndex == 2) {
           appProvider.loadContracts(clientId: clientId);
-        });
-      }
-      
-      // Se navegando para pagamentos
-      if (tabIndex == 3) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        }
+        
+        // Se navegando para pagamentos ou se os filtros mudaram
+        if (tabIndex == 3) {
           appProvider.loadPayments(clientId: clientId, contractId: contractId);
-        });
-      }
+        }
+        
+        // CORREÇÃO: Se estamos removendo filtros de uma aba, 
+        // precisamos também atualizar os dados das outras abas para manter sincronização
+        if (clientId == null || contractId == null) {
+          // Recarregar contratos se os filtros foram limpos
+          appProvider.loadContracts(clientId: clientId);
+          // Recarregar pagamentos se os filtros foram limpos
+          appProvider.loadPayments(clientId: clientId, contractId: contractId);
+        }
+      });
     };
   }
   
@@ -220,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return _buildDashboard();
       case 1:
-        return const ClientsScreen();
+        return const ClientsScreenEnhanced();
       case 2:
         return ContractListWidget(
           clientId: _selectedClientId,

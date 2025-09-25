@@ -418,12 +418,12 @@ class AppProvider with ChangeNotifier {
     try {
       print('📊 [DASHBOARD] === INICIANDO NOVA REQUISIÇÃO ===');
       print('📊 [DASHBOARD] Fazendo requisição para /api/dashboard/stats...');
-      print('📊 [DASHBOARD] URL: http://localhost:3001/api/dashboard/stats');
+      print('📊 [DASHBOARD] URL: http://localhost:3000/api/dashboard/stats');
       print('📊 [DASHBOARD] Timestamp: ${DateTime.now()}');
       
       // Buscar dados do dashboard da API com timeout maior
       final response = await http.get(
-        Uri.parse('http://localhost:3001/api/dashboard/stats'),
+        Uri.parse('http://localhost:3000/api/dashboard/stats'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

@@ -9,10 +9,12 @@ class Client {
   final DateTime? birthDate;
   final String? address;
   final String? city;
+  final String? state;
   final String? postalCode;
   final String country;
   final AttentionLevel attentionLevel;
   final String? notes;
+  final String? status;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -28,10 +30,12 @@ class Client {
     this.birthDate,
     this.address,
     this.city,
+    this.state,
     this.postalCode,
     this.country = 'Portugal',
     this.attentionLevel = AttentionLevel.normal,
     this.notes,
+    this.status,
     this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
@@ -75,6 +79,7 @@ class Client {
           : null,
       address: json['address']?.toString(),
       city: json['city']?.toString(),
+      state: json['state']?.toString(),
       postalCode: json['postal_code']?.toString(),
       country: json['country']?.toString() ?? 'Portugal',
       attentionLevel: AttentionLevel.values.firstWhere(
@@ -82,6 +87,7 @@ class Client {
         orElse: () => AttentionLevel.normal,
       ),
       notes: json['notes']?.toString(),
+      status: json['status']?.toString(),
       isActive: json['is_active'] ?? true,
       createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
@@ -100,10 +106,12 @@ class Client {
       'birth_date': birthDate?.toIso8601String().split('T')[0],
       'address': address,
       'city': city,
+      'state': state,
       'postal_code': postalCode,
       'country': country,
       'attention_level': attentionLevel.name,
       'notes': notes,
+      'status': status,
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -121,10 +129,12 @@ class Client {
     DateTime? birthDate,
     String? address,
     String? city,
+    String? state,
     String? postalCode,
     String? country,
     AttentionLevel? attentionLevel,
     String? notes,
+    String? status,
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -140,10 +150,12 @@ class Client {
       birthDate: birthDate ?? this.birthDate,
       address: address ?? this.address,
       city: city ?? this.city,
+      state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
       attentionLevel: attentionLevel ?? this.attentionLevel,
       notes: notes ?? this.notes,
+      status: status ?? this.status,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
