@@ -11,7 +11,10 @@ class Validators {
       return null; // Campo opcional
     }
     
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    // RFC 5322 compliant email regex - more permissive and accurate
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+    );
     if (!emailRegex.hasMatch(value.trim())) {
       return 'Digite um email válido';
     }

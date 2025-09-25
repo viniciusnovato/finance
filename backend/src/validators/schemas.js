@@ -25,7 +25,7 @@ const clientSchema = Joi.object({
   postal_code: Joi.string().max(20).allow('', null),
   country: Joi.string().max(100).default('Portugal'),
   notes: Joi.string().allow('', null),
-  is_active: Joi.boolean().default(true)
+  status: Joi.string().valid('active', 'inactive').default('active')
 });
 
 // Schema para validação de contratos

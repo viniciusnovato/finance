@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../utils/app_colors.dart';
+import '../utils/validators.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 
@@ -235,11 +236,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 print('❌ [VALIDATION] Email vazio');
                                 return 'Por favor, digite seu email';
                               }
-                              // Regex corrigido para validação de email
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                  .hasMatch(value)) {
+                              // Use centralized email validator
+                              final emailValidation = Validators.email(value);
+                              if (emailValidation != null) {
                                 print('❌ [VALIDATION] Email inválido: "$value"');
-                                return 'Digite um email válido';
+                                return emailValidation;
                               }
                               print('✅ [VALIDATION] Email válido');
                               return null;

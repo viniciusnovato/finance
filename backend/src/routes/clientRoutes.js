@@ -110,8 +110,7 @@ router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
 // @access  Private
 router.post('/', authenticateToken, validateClient, asyncHandler(async (req, res) => {
   const clientData = {
-    ...req.body,
-    created_by: req.user.id
+    ...req.body
   };
 
   // Se o usuário não for admin, usar sua filial
@@ -234,12 +233,13 @@ router.put('/:id', authenticateToken, validateClientUpdate, asyncHandler(async (
 // @access  Private
 router.patch('/:id/status', authenticateToken, asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { is_active } = req.body;
+  const { status } = req.body;
 
-  if (typeof is_active !== 'boolean') {
+  if (!status || !['active', 'inactive'].includes(status)) {
     return res.status(400).json({
-      error: 'Status deve ser um valor booleano',
-      code: 'INVALID_STATUS'
+      error: 'Status inválido',
+      code: 'INVALID_STATUS',
+      details: 'Status deve ser "active" ou "inactive"'
     });
   }
 
@@ -273,7 +273,7 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req, res) => 
   }
 
   // Se está desativando, verificar se não há contratos ativos
-  if (!is_active) {
+  if (status === 'inactive') {
     const { data: activeContracts } = await supabaseAdmin
       .from('contracts')
       .select('id')
@@ -292,7 +292,7 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req, res) => 
   const { data, error } = await supabaseAdmin
     .from('clients')
     .update({
-      is_active,
+      status,
       updated_at: new Date().toISOString()
     })
     .eq('id', id)
@@ -308,7 +308,7 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req, res) => 
   }
 
   res.json({
-    message: `Cliente ${is_active ? 'ativado' : 'desativado'} com sucesso`,
+    message: `Cliente ${status === 'active' ? 'ativado' : 'desativado'} com sucesso`,
     client: data
   });
 }));

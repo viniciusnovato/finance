@@ -209,7 +209,7 @@ router.post('/', authenticateToken, validateContract, asyncHandler(async (req, r
   // Verificar se o cliente existe e está ativo
   const { data: client, error: clientError } = await supabaseAdmin
     .from('clients')
-    .select('id, is_active')
+    .select('id, status')
     .eq('id', contractData.client_id)
     .single();
 
@@ -220,7 +220,7 @@ router.post('/', authenticateToken, validateContract, asyncHandler(async (req, r
     });
   }
 
-  if (!client.is_active) {
+  if (client.status !== 'active') {
     return res.status(400).json({
       error: 'Cliente está inativo',
       code: 'CLIENT_INACTIVE'

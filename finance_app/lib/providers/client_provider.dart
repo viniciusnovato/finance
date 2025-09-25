@@ -60,7 +60,7 @@ class ClientProvider with ChangeNotifier {
   Future<void> createClient(Client client) async {
     _setLoading(true);
     try {
-      final newClient = await SupabaseService.createClient(client);
+      final newClient = await ApiService.createClient(client.toJson());
       _clients.add(newClient);
       _error = null;
       notifyListeners();
@@ -72,16 +72,21 @@ class ClientProvider with ChangeNotifier {
   }
 
   Future<void> updateClient(Client client) async {
+    print('🔧 [CLIENT_PROVIDER] Iniciando atualização de cliente via API...');
     _setLoading(true);
     try {
-      final updatedClient = await SupabaseService.updateClient(client);
+      print('🔧 [CLIENT_PROVIDER] Chamando ApiService.updateClient para ID: ${client.id}');
+      final updatedClient = await ApiService.updateClient(client.id!, client.toUpdateJson());
       final index = _clients.indexWhere((c) => c.id == client.id);
       if (index != -1) {
         _clients[index] = updatedClient;
+        print('✅ [CLIENT_PROVIDER] Cliente atualizado na lista local (índice: $index)');
       }
       _error = null;
       notifyListeners();
+      print('✅ [CLIENT_PROVIDER] Cliente atualizado com sucesso via API');
     } catch (e) {
+      print('❌ [CLIENT_PROVIDER] Erro ao atualizar cliente via API: $e');
       _error = 'Erro ao atualizar cliente: $e';
     } finally {
       _setLoading(false);
@@ -103,8 +108,8 @@ class ClientProvider with ChangeNotifier {
   }
   
   // Filtros e buscas locais
-  List<Client> getClientsByAttention(level) {
-    return _clients.where((client) => client.== level).toList();
+  List<Client> getClientsByAttention(String level) {
+    return _clients.where((client) => client.status == level).toList();
   }
   
   Client? getClientById(String id) {

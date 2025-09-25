@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/client.dart';
 import '../utils/app_colors.dart';
+import '../utils/validators.dart';
 
 class ClientFormScreen extends StatefulWidget {
   final Client? client; // null para criar, preenchido para editar
@@ -86,10 +87,14 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   }
 
   Future<void> _saveClient() async {
+    print('🔧 [CLIENT_FORM] Iniciando salvamento de cliente...');
+    
     if (!_formKey.currentState!.validate()) {
+      print('❌ [CLIENT_FORM] Validação do formulário falhou');
       return;
     }
 
+    print('✅ [CLIENT_FORM] Validação do formulário passou');
     setState(() {
       _isLoading = true;
     });
@@ -110,17 +115,23 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         postalCode: _postalCodeController.text.trim().isEmpty ? null : _postalCodeController.text.trim(),
         country: _country,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-        isActive: _isActive,
+        status: _isActive ? 'active' : 'inactive',
         createdAt: widget.client?.createdAt ?? now,
         updatedAt: now,
       );
 
+      print('🔧 [CLIENT_FORM] Cliente criado: ${client.toJson()}');
+      
       final provider = context.read<AppProvider>();
       
       if (widget.client == null) {
+        print('🔧 [CLIENT_FORM] Criando novo cliente...');
         await provider.createClient(client);
+        print('✅ [CLIENT_FORM] Cliente criado com sucesso');
       } else {
+        print('🔧 [CLIENT_FORM] Atualizando cliente existente (ID: ${widget.client!.id})...');
         await provider.updateClient(client);
+        print('✅ [CLIENT_FORM] Cliente atualizado com sucesso');
       }
 
       if (mounted) {
@@ -137,6 +148,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
+      print('❌ [CLIENT_FORM] Erro ao salvar cliente: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -241,9 +253,8 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                       ),
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$').hasMatch(value)) {
-                            return 'Email inválido';
-                          }
+                          // Use the centralized email validator from utils
+                          return Validators.email(value);
                         }
                         return null;
                       },
@@ -260,6 +271,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.phone),
                             ),
+                            validator: Validators.phone,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -268,10 +280,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                             controller: _mobileController,
                             keyboardType: TextInputType.phone,
                             decoration: const InputDecoration(
-                              labelText: 'Celular',
+                              labelText: 'Telemóvel',
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.smartphone),
                             ),
+                            validator: Validators.phone,
                           ),
                         ),
                       ],
@@ -287,6 +300,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.badge),
                             ),
+                            validator: Validators.taxId,
                           ),
                         ),
                         const SizedBox(width: 16),

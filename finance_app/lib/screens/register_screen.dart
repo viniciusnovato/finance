@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../utils/app_colors.dart';
+import '../utils/validators.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -153,11 +154,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 if (value == null || value.isEmpty) {
                                   return 'Por favor, insira seu email';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$')
-                                    .hasMatch(value)) {
-                                  return 'Por favor, insira um email válido';
-                                }
-                                return null;
+                                // Use centralized email validator
+                                return Validators.email(value) ?? (value.isEmpty ? 'Por favor, insira seu email' : null);
                               },
                             ),
                             const SizedBox(height: 16),

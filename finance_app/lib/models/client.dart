@@ -14,7 +14,6 @@ class Client {
   final String country;
   final String? notes;
   final String? status;
-  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -33,13 +32,15 @@ class Client {
     this.postalCode,
     this.country = 'Portugal',
     this.notes,
-    this.status,
-    this.isActive = true,
+    this.status = 'active',
     required this.createdAt,
     required this.updatedAt,
   });
 
   String get fullName => '$firstName $lastName';
+
+  // Getter para compatibilidade com código existente
+  bool get isActive => status == 'active';
 
   static DateTime _parseDate(String dateStr) {
     try {
@@ -81,8 +82,7 @@ class Client {
       postalCode: json['postal_code']?.toString(),
       country: json['country']?.toString() ?? 'Portugal',
       notes: json['notes']?.toString(),
-      status: json['status']?.toString(),
-      isActive: json['is_active'] ?? true,
+      status: json['status']?.toString() ?? 'active',
       createdAt: json['created_at'] != null ? _parseDate(json['created_at']) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? _parseDate(json['updated_at']) : DateTime.now(),
     );
@@ -105,9 +105,28 @@ class Client {
       'country': country,
       'notes': notes,
       'status': status,
-      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  // Método específico para atualizações que exclui campos não permitidos
+  Map<String, dynamic> toUpdateJson() {
+    return {
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'phone': phone,
+      'mobile': mobile,
+      'tax_id': taxId,
+      'birth_date': birthDate?.toIso8601String().split('T')[0],
+      'address': address,
+      'city': city,
+      'state': state,
+      'postal_code': postalCode,
+      'country': country,
+      'notes': notes,
+      'status': status,
     };
   }
 
@@ -127,7 +146,6 @@ class Client {
     String? country,
     String? notes,
     String? status,
-    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -147,7 +165,6 @@ class Client {
       country: country ?? this.country,
       notes: notes ?? this.notes,
       status: status ?? this.status,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -20,6 +20,7 @@ class ApiService {
   static void _handleApiError(http.Response response) {
     if (response.statusCode >= 400) {
       final errorData = json.decode(response.body);
+      print('❌ [API_SERVICE] Erro ${response.statusCode}: ${response.body}');
       throw Exception(errorData['error'] ?? 'Erro na API');
     }
   }
@@ -77,18 +78,33 @@ class ApiService {
   
   static Future<Client> createClient(Map<String, dynamic> clientData) async {
     try {
+      print('🔧 [API_SERVICE] Iniciando criação de cliente...');
+      print('🔧 [API_SERVICE] Dados do cliente: ${json.encode(clientData)}');
+      
       final headers = await _getHeaders();
+      print('🔧 [API_SERVICE] Headers: $headers');
+      print('🔧 [API_SERVICE] URL: $baseUrl/clients');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/clients'),
         headers: headers,
         body: json.encode(clientData),
       );
       
+      print('🔧 [API_SERVICE] Status da resposta: ${response.statusCode}');
+      print('🔧 [API_SERVICE] Corpo da resposta: ${response.body}');
+      
       _handleApiError(response);
       
       final data = json.decode(response.body);
-      return Client.fromJson(data['client']);
+      print('🔧 [API_SERVICE] Dados decodificados: $data');
+      
+      final client = Client.fromJson(data['client']);
+      print('✅ [API_SERVICE] Cliente criado com sucesso: ${client.id}');
+      
+      return client;
     } catch (e) {
+      print('❌ [API_SERVICE] Erro ao criar cliente: $e');
       throw Exception('Erro ao criar cliente: $e');
     }
   }

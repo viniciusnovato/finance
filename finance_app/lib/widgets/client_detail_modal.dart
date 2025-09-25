@@ -124,7 +124,7 @@ class ClientDetailModal extends StatelessWidget {
                         if (client.phone?.isNotEmpty == true)
                           _buildInfoRow('Telefone', _formatPhone(client.phone!), isPhone: true),
                         if (client.mobile?.isNotEmpty == true)
-                          _buildInfoRow('Celular', _formatPhone(client.mobile!), isPhone: true),
+                          _buildInfoRow('Telemóvel', _formatPhone(client.mobile!), isPhone: true),
                       ],
                     ),
 
@@ -384,7 +384,7 @@ class ClientDetailModal extends StatelessWidget {
       // Telefone fixo: (00) 0000-0000
       return '(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}';
     } else if (digits.length == 11) {
-      // Celular: (00) 00000-0000
+      // Telemóvel: (00) 00000-0000
       return '(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}';
     }
     return phone;

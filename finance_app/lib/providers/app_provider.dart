@@ -195,30 +195,46 @@ class AppProvider with ChangeNotifier {
   }
 
   Future<void> createClient(Client client) async {
+    print('🔧 [APP_PROVIDER] Iniciando criação de cliente...');
     _setLoading(true);
     try {
-      final newClient = await SupabaseService.createClient(client);
+      print('🔧 [APP_PROVIDER] Chamando ApiService.createClient...');
+      final newClient = await ApiService.createClient(client.toJson());
+      print('🔧 [APP_PROVIDER] Cliente retornado do API: ${newClient.toJson()}');
+      
       _clients.add(newClient);
+      print('🔧 [APP_PROVIDER] Cliente adicionado à lista local');
+      
       _error = null;
       notifyListeners();
+      print('✅ [APP_PROVIDER] Listeners notificados - cliente criado com sucesso');
     } catch (e) {
+      print('❌ [APP_PROVIDER] Erro ao criar cliente: $e');
       _error = 'Erro ao criar cliente: $e';
+      notifyListeners();
+      rethrow; // Re-throw para que o UI possa capturar o erro
     } finally {
       _setLoading(false);
+      print('🔧 [APP_PROVIDER] Loading finalizado');
     }
   }
 
   Future<void> updateClient(Client client) async {
+    print('🔧 [APP_PROVIDER] Iniciando atualização de cliente via API...');
     _setLoading(true);
     try {
-      final updatedClient = await SupabaseService.updateClient(client);
+      print('🔧 [APP_PROVIDER] Chamando ApiService.updateClient para ID: ${client.id}');
+      final updatedClient = await ApiService.updateClient(client.id!, client.toUpdateJson());
       final index = _clients.indexWhere((c) => c.id == client.id);
       if (index != -1) {
         _clients[index] = updatedClient;
+        print('✅ [APP_PROVIDER] Cliente atualizado na lista local (índice: $index)');
       }
       _error = null;
       notifyListeners();
+      print('✅ [APP_PROVIDER] Cliente atualizado com sucesso via API');
     } catch (e) {
+      print('❌ [APP_PROVIDER] Erro ao atualizar cliente via API: $e');
       _error = 'Erro ao atualizar cliente: $e';
     } finally {
       _setLoading(false);
